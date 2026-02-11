@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    command: pnpm run start:dev
     ports:
       - '3000:3000'
     volumes:
