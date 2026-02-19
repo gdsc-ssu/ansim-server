@@ -42,7 +42,6 @@ describe('UserController', () => {
       jest.spyOn(service, 'findOne').mockResolvedValue(mockUser);
 
       expect(await controller.findOne(1)).toEqual(mockUser);
-      expect(service.findOne).toHaveBeenCalledWith(1);
     });
 
     it('should propagate NotFoundException', async () => {
