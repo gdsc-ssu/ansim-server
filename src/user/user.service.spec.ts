@@ -49,7 +49,9 @@ describe('UserService', () => {
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(mockUser);
 
       expect(await service.findOne(1)).toEqual(mockUser);
-      expect(repository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+      expect(jest.spyOn(repository, 'findOneBy')).toHaveBeenCalledWith({
+        id: 1,
+      });
     });
 
     it('should throw NotFoundException when user not found', async () => {
