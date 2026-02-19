@@ -46,9 +46,7 @@ describe('UserController', () => {
     });
 
     it('should propagate NotFoundException', async () => {
-      jest
-        .spyOn(service, 'findOne')
-        .mockRejectedValue(new NotFoundException());
+      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException());
 
       await expect(controller.findOne(999)).rejects.toThrow(NotFoundException);
     });
