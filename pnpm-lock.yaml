@@ -35,6 +35,9 @@ importers:
       google-auth-library:
         specifier: ^10.5.0
         version: 10.5.0
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
       passport:
         specifier: ^0.7.0
         version: 0.7.0
