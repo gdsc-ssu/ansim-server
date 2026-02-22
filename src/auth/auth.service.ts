@@ -1,30 +1,45 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { UserService } from '../user/user.service';
 import { JwtPayload } from './strategies/jwt.strategy';
-import type { StringValue } from 'ms';
+
+type JwtSignOptionsWithStringExpiry = Omit<JwtSignOptions, 'expiresIn'> & {
+  expiresIn: string;
+};
 
 @Injectable()
 export class AuthService {
   private readonly googleClient: OAuth2Client;
+  private readonly googleClientId: string;
+  private readonly atOptions: JwtSignOptionsWithStringExpiry;
+  private readonly rtOptions: JwtSignOptionsWithStringExpiry;
 
   constructor(
-    private readonly configService: ConfigService,
+    configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
   ) {
-    this.googleClient = new OAuth2Client(
-      configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
-    );
+    this.googleClientId = configService.getOrThrow<string>('GOOGLE_CLIENT_ID');
+    this.googleClient = new OAuth2Client(this.googleClientId);
+
+    this.atOptions = {
+      secret: configService.getOrThrow<string>('JWT_SECRET'),
+      expiresIn: configService.getOrThrow<string>('JWT_EXPIRES_IN'),
+    };
+
+    this.rtOptions = {
+      secret: configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      expiresIn: configService.getOrThrow<string>('JWT_REFRESH_EXPIRES_IN'),
+    };
   }
 
   async googleLogin(idToken: string) {
     const ticket = await this.googleClient
       .verifyIdToken({
         idToken,
-        audience: this.configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
+        audience: this.googleClientId,
       })
       .catch(() => {
         throw new UnauthorizedException('유효하지 않은 Google 토큰입니다.');
@@ -48,7 +63,7 @@ export class AuthService {
   async refresh(refreshToken: string) {
     const payload = await this.jwtService
       .verifyAsync<JwtPayload>(refreshToken, {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        secret: this.rtOptions.secret,
       })
       .catch(() => {
         throw new UnauthorizedException('Refresh Token이 만료되었습니다.');
@@ -65,21 +80,14 @@ export class AuthService {
   private issueTokens(userId: string, email: string) {
     const jwtPayload: JwtPayload = { sub: userId, email };
 
-    const atExpiry =
-      this.configService.getOrThrow<StringValue>('JWT_EXPIRES_IN');
-    const rtExpiry = this.configService.getOrThrow<StringValue>(
-      'JWT_REFRESH_EXPIRES_IN',
+    const accessToken: string = this.jwtService.sign(
+      jwtPayload,
+      this.atOptions as JwtSignOptions,
     );
-
-    const accessToken = this.jwtService.sign(jwtPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
-      expiresIn: atExpiry,
-    });
-
-    const refreshToken = this.jwtService.sign(jwtPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: rtExpiry,
-    });
+    const refreshToken: string = this.jwtService.sign(
+      jwtPayload,
+      this.rtOptions as JwtSignOptions,
+    );
 
     return { accessToken, refreshToken };
   }
