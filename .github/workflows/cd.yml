@@ -18,7 +18,9 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
+          script_stop: true
           script: |
+            set -e
             export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
             cd ${{ secrets.NAS_DEPLOY_PATH }}
 
