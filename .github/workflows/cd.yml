@@ -19,6 +19,7 @@ jobs:
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
           script: |
+            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
             cd ${{ secrets.NAS_DEPLOY_PATH }}
 
             echo ".env 생성"
