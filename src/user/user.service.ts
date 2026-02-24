@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+
+interface GoogleUserPayload {
+  googleId: string;
+  email: string;
+  name?: string;
+  profileImage?: string;
+}
 
 @Injectable()
 export class UserService {
@@ -10,15 +17,25 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ googleId });
   }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+  async findOrCreate(payload: GoogleUserPayload): Promise<User> {
+    const existing = await this.findByGoogleId(payload.googleId);
+    if (existing) {
+      return existing;
     }
-    return user;
+    const user = this.userRepository.create({
+      googleId: payload.googleId,
+      email: payload.email,
+      name: payload.name,
+      profileImage: payload.profileImage,
+    });
+    return this.userRepository.save(user);
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.userRepository.findOneBy({ id });
   }
 }

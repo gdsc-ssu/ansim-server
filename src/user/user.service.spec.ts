@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
@@ -9,7 +8,14 @@ describe('UserService', () => {
   let service: UserService;
   let repository: Repository<User>;
 
-  const mockUser: User = { id: 1, email: 'test@example.com', name: 'Test' };
+  const mockUser: User = {
+    id: 'uuid-1234',
+    googleId: 'google-sub-1234',
+    email: 'test@example.com',
+    name: 'Test User',
+    profileImage: 'https://example.com/photo.jpg',
+    createdAt: new Date(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -18,8 +24,9 @@ describe('UserService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: {
-            find: jest.fn(),
             findOneBy: jest.fn(),
+            create: jest.fn(),
+            save: jest.fn(),
           },
         },
       ],
@@ -29,35 +36,65 @@ describe('UserService', () => {
     repository = module.get<Repository<User>>(getRepositoryToken(User));
   });
 
-  describe('findAll', () => {
-    it('should return an array of users', async () => {
-      const users = [mockUser];
-      jest.spyOn(repository, 'find').mockResolvedValue(users);
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
 
-      expect(await service.findAll()).toEqual(users);
+  describe('findByGoogleId', () => {
+    it('should return a user when found', async () => {
+      jest.spyOn(repository, 'findOneBy').mockResolvedValue(mockUser);
+      expect(await service.findByGoogleId('google-sub-1234')).toEqual(mockUser);
     });
 
-    it('should return empty array when no users exist', async () => {
-      jest.spyOn(repository, 'find').mockResolvedValue([]);
-
-      expect(await service.findAll()).toEqual([]);
+    it('should return null when not found', async () => {
+      jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
+      expect(await service.findByGoogleId('unknown')).toBeNull();
     });
   });
 
-  describe('findOne', () => {
-    it('should return a user by id', async () => {
+  describe('findById', () => {
+    it('should return a user when found', async () => {
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(mockUser);
-
-      expect(await service.findOne(1)).toEqual(mockUser);
-      expect(jest.spyOn(repository, 'findOneBy')).toHaveBeenCalledWith({
-        id: 1,
-      });
+      expect(await service.findById('uuid-1234')).toEqual(mockUser);
     });
 
-    it('should throw NotFoundException when user not found', async () => {
+    it('should return null when not found', async () => {
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
+      expect(await service.findById('unknown')).toBeNull();
+    });
+  });
 
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+  describe('findOrCreate', () => {
+    it('should return existing user when found', async () => {
+      jest.spyOn(repository, 'findOneBy').mockResolvedValue(mockUser);
+      const createSpy = jest.spyOn(repository, 'create');
+
+      const result = await service.findOrCreate({
+        googleId: 'google-sub-1234',
+        email: 'test@example.com',
+      });
+
+      expect(result).toEqual(mockUser);
+      expect(createSpy).not.toHaveBeenCalled();
+    });
+
+    it('should create and return new user when not found', async () => {
+      jest.spyOn(repository, 'findOneBy').mockResolvedValue(null);
+      const createSpy = jest
+        .spyOn(repository, 'create')
+        .mockReturnValue(mockUser);
+      const saveSpy = jest
+        .spyOn(repository, 'save')
+        .mockResolvedValue(mockUser);
+
+      const result = await service.findOrCreate({
+        googleId: 'google-sub-1234',
+        email: 'test@example.com',
+      });
+
+      expect(result).toEqual(mockUser);
+      expect(createSpy).toHaveBeenCalled();
+      expect(saveSpy).toHaveBeenCalled();
     });
   });
 });
