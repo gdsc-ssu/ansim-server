@@ -25,18 +25,10 @@ jobs:
             cd ${{ secrets.NAS_DEPLOY_PATH }}
 
             echo ".env 생성"
-            [ -f .env ] && rm .env
-            cat <<EOF > .env
-            NODE_ENV=${{ secrets.NODE_ENV }}
-            PORT=${{ secrets.PORT }}
-            DATABASE_HOST=${{ secrets.DATABASE_HOST }}
-            DATABASE_PORT=${{ secrets.DATABASE_PORT }}
-            DATABASE_USER=${{ secrets.DATABASE_USER }}
-            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
-            DATABASE_NAME=${{ secrets.DATABASE_NAME }}
-            EOF
+            echo "${{ secrets.ENV_FILE }}" > .env
 
             echo "GitHub main 브랜치 코드 최신화"
+            git config --global --add safe.directory ${{ secrets.NAS_DEPLOY_PATH }}
             git fetch origin
             git reset --hard origin/main
 
