@@ -1,0 +1,47 @@
+name: Deploy to NAS (CD)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to NAS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect to NAS via SSH and deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.NAS_HOST }}
+          username: ${{ secrets.NAS_USER }}
+          password: ${{ secrets.NAS_PASSWORD }}
+          port: ${{ secrets.NAS_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+            cd ${{ secrets.NAS_DEPLOY_PATH }}
+
+            echo ".env 생성"
+            [ -f .env ] && rm .env
+            cat <<EOF > .env
+            NODE_ENV=${{ secrets.NODE_ENV }}
+            PORT=${{ secrets.PORT }}
+            DATABASE_HOST=${{ secrets.DATABASE_HOST }}
+            DATABASE_PORT=${{ secrets.DATABASE_PORT }}
+            DATABASE_USER=${{ secrets.DATABASE_USER }}
+            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+            DATABASE_NAME=${{ secrets.DATABASE_NAME }}
+            EOF
+
+            echo "GitHub main 브랜치 코드 최신화"
+            git fetch origin
+            git reset --hard origin/main
+
+            echo "Docker 이미지 빌드 및 컨테이너 재시작"
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "배포 완료"

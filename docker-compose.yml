@@ -1,6 +1,8 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      target: builder
     command: pnpm run start:dev
     ports:
       - '3000:3000'

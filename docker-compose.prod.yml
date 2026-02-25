@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      target: production
+    ports:
+      - '21000:3000'
+    env_file:
+      - .env
+    restart: unless-stopped
