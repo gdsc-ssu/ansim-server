@@ -36,6 +36,7 @@ describe('ImageService', () => {
           provide: GcsStorageService,
           useValue: {
             generateSignedUrl: jest.fn(),
+            fileExists: jest.fn(),
           },
         },
       ],
@@ -76,12 +77,16 @@ describe('ImageService', () => {
         size: 1024,
       };
 
+      const fileExistsSpy = jest
+        .spyOn(gcsStorageService, 'fileExists')
+        .mockResolvedValue(true);
       const createSpy = jest
         .spyOn(repository, 'create')
         .mockReturnValue(mockImage);
       jest.spyOn(repository, 'save').mockResolvedValue(mockImage);
 
       expect(await service.saveImage(dto)).toEqual(mockImage);
+      expect(fileExistsSpy).toHaveBeenCalledWith('images/test.jpg');
       expect(createSpy).toHaveBeenCalledWith({
         url: dto.url,
         mimeType: dto.mimeType,
@@ -96,6 +101,19 @@ describe('ImageService', () => {
         mimeType: 'image/jpeg',
         size: 1024,
       };
+
+      await expect(service.saveImage(dto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when file does not exist in GCS', async () => {
+      const dto = {
+        url: 'https://storage.googleapis.com/test-bucket/images/missing.jpg',
+        originalName: 'photo.jpg',
+        mimeType: 'image/jpeg',
+        size: 1024,
+      };
+
+      jest.spyOn(gcsStorageService, 'fileExists').mockResolvedValue(false);
 
       await expect(service.saveImage(dto)).rejects.toThrow(BadRequestException);
     });
