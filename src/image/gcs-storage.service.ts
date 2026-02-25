@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
 import * as crypto from 'crypto';
 import * as path from 'path';
+import { GCS_URL_PREFIX } from './image.constant';
 
 export interface SignedUrlResult {
   signedUrl: string;
@@ -49,7 +50,7 @@ export class GcsStorageService implements OnModuleInit {
         },
       });
 
-    const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${objectKey}`;
+    const publicUrl = `${GCS_URL_PREFIX}${this.bucketName}/${objectKey}`;
 
     return { signedUrl, publicUrl };
   }

@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Image } from './entities/image.entity';
 import { GcsStorageService, SignedUrlResult } from './gcs-storage.service';
 import { CreateSignedUrlDto, SaveImageDto } from './dto';
+import { GCS_URL_PREFIX } from './image.constant';
 
 @Injectable()
 export class ImageService {
@@ -26,8 +27,18 @@ export class ImageService {
   }
 
   async saveImage(dto: SaveImageDto): Promise<Image> {
-    if (!dto.url.startsWith('https://storage.googleapis.com/')) {
+    if (!dto.url.startsWith(GCS_URL_PREFIX)) {
       throw new BadRequestException('URL must be a valid GCS URL');
+    }
+
+    const objectKey = dto.url.slice(
+      dto.url.indexOf('/', GCS_URL_PREFIX.length) + 1,
+    );
+    const exists = await this.gcsStorageService.fileExists(objectKey);
+    if (!exists) {
+      throw new BadRequestException(
+        'File not found in GCS. Please upload the file first.',
+      );
     }
 
     const image = this.imageRepository.create({
