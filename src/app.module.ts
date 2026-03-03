@@ -10,6 +10,7 @@ import { ImageModule } from './image/image.module';
 import { ReportModule } from './report/report.module';
 import { SafetyMungoReportModule } from './safety-mungo-report/safety-mungo-report.module';
 import { MarkerModule } from './marker/marker.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MarkerModule } from './marker/marker.module';
       ...databaseConfig,
       autoLoadEntities: true,
     }),
+    SchedulerModule,
     UserModule,
     AuthModule,
     ImageModule,
