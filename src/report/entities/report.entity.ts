@@ -5,6 +5,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Like } from '../../like/entities/like.entity';
@@ -55,6 +56,9 @@ export class Report {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => User, (user) => user.reports)
   user: User;
