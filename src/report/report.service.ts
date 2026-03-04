@@ -79,6 +79,36 @@ export class ReportService {
     return qb.getMany();
   }
 
+  async findOne(id: string): Promise<Report> {
+    const report = await this.reportRepository
+      .createQueryBuilder('report')
+      .select([
+        'report.id',
+        'report.userId',
+        'report.imageUrl',
+        'report.latitude',
+        'report.longitude',
+        'report.hazardType',
+        'report.hazardLevel',
+        'report.description',
+        'report.createdAt',
+        'report.updatedAt',
+      ])
+      .addSelect(
+        '(SELECT COUNT(*) FROM likes l WHERE l."reportId" = report.id)',
+        'report_likeCount',
+      )
+      .addSelect(
+        '(SELECT COUNT(*) FROM comments c WHERE c."reportId" = report.id)',
+        'report_commentCount',
+      )
+      .where('report.id = :id', { id })
+      .getOne();
+
+    if (!report) throw new NotFoundException('신고를 찾을 수 없습니다.');
+    return report;
+  }
+
   async findByUser(userId: string): Promise<Report[]> {
     return this.reportRepository.find({
       where: { userId },

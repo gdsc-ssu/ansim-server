@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
   Req,
@@ -31,6 +32,12 @@ export class ReportController {
   @ApiOperation({ summary: '내 신고 목록 조회' })
   findMyReports(@Req() req: Request & { user: User }) {
     return this.reportService.findByUser(req.user.id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '신고 단건 조회' })
+  findOne(@Param('id') id: string) {
+    return this.reportService.findOne(id);
   }
 
   @Post()
