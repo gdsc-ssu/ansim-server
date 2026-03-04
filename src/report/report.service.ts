@@ -127,6 +127,15 @@ export class ReportService {
     return this.reportRepository.save(report);
   }
 
+  async remove(id: string, userId: string): Promise<void> {
+    const report = await this.reportRepository.findOne({ where: { id } });
+    if (!report) throw new NotFoundException('신고를 찾을 수 없습니다.');
+    if (report.userId !== userId)
+      throw new ForbiddenException('본인 신고만 삭제할 수 있습니다.');
+
+    await this.reportRepository.delete(id);
+  }
+
   async findByUser(userId: string): Promise<Report[]> {
     return this.reportRepository.find({
       where: { userId },

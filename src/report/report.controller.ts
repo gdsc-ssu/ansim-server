@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -51,6 +54,15 @@ export class ReportController {
     @Req() req: Request & { user: User },
   ) {
     return this.reportService.update(id, req.user.id, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '신고 삭제 (본인만)' })
+  remove(@Param('id') id: string, @Req() req: Request & { user: User }) {
+    return this.reportService.remove(id, req.user.id);
   }
 
   @Post()
