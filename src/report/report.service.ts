@@ -1,8 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from './entities/report.entity';
-import { CreateReportDto, GetReportsQueryDto } from './dto';
+import { CreateReportDto, GetReportsQueryDto, UpdateReportDto } from './dto';
 
 @Injectable()
 export class ReportService {
@@ -107,6 +111,20 @@ export class ReportService {
 
     if (!report) throw new NotFoundException('신고를 찾을 수 없습니다.');
     return report;
+  }
+
+  async update(
+    id: string,
+    userId: string,
+    dto: UpdateReportDto,
+  ): Promise<Report> {
+    const report = await this.reportRepository.findOne({ where: { id } });
+    if (!report) throw new NotFoundException('신고를 찾을 수 없습니다.');
+    if (report.userId !== userId)
+      throw new ForbiddenException('본인 신고만 수정할 수 있습니다.');
+
+    Object.assign(report, dto);
+    return this.reportRepository.save(report);
   }
 
   async findByUser(userId: string): Promise<Report[]> {

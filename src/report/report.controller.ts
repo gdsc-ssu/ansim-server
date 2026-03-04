@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -12,7 +13,7 @@ import { Request } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { User } from '../user/entities/user.entity';
-import { CreateReportDto, GetReportsQueryDto } from './dto';
+import { CreateReportDto, GetReportsQueryDto, UpdateReportDto } from './dto';
 import { ReportService } from './report.service';
 
 @ApiTags('Reports')
@@ -38,6 +39,18 @@ export class ReportController {
   @ApiOperation({ summary: '신고 단건 조회' })
   findOne(@Param('id') id: string) {
     return this.reportService.findOne(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '신고 수정 (본인만)' })
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateReportDto,
+    @Req() req: Request & { user: User },
+  ) {
+    return this.reportService.update(id, req.user.id, dto);
   }
 
   @Post()
