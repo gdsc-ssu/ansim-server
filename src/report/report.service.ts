@@ -56,14 +56,8 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .addSelect(
-        '(SELECT COUNT(*) FROM likes l WHERE l."reportId" = report.id)',
-        'report_likeCount',
-      )
-      .addSelect(
-        '(SELECT COUNT(*) FROM comments c WHERE c."reportId" = report.id)',
-        'report_commentCount',
-      )
+      .loadRelationCountAndMap('report.likeCount', 'report.likes')
+      .loadRelationCountAndMap('report.commentCount', 'report.comments')
       .where(
         `ST_DWithin(
           report.location::geography,
@@ -98,14 +92,8 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .addSelect(
-        '(SELECT COUNT(*) FROM likes l WHERE l."reportId" = report.id)',
-        'report_likeCount',
-      )
-      .addSelect(
-        '(SELECT COUNT(*) FROM comments c WHERE c."reportId" = report.id)',
-        'report_commentCount',
-      )
+      .loadRelationCountAndMap('report.likeCount', 'report.likes')
+      .loadRelationCountAndMap('report.commentCount', 'report.comments')
       .where('report.id = :id', { id })
       .getOne();
 
