@@ -25,7 +25,7 @@ export class Comment {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Report, (report) => report.comments)
+  @ManyToOne(() => Report, (report) => report.comments, { onDelete: 'CASCADE' })
   report: Report;
 
   @ManyToOne(() => User, (user) => user.comments)
