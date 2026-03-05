@@ -68,4 +68,7 @@ export class Report {
 
   @OneToMany(() => Like, (like) => like.report)
   likes: Like[];
+
+  likeCount: number;
+  commentCount: number;
 }

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { databaseConfig } from './database.config';
 import { UserModule } from './user/user.module';
 import { ImageModule } from './image/image.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ImageModule } from './image/image.module';
     UserModule,
     AuthModule,
     ImageModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
