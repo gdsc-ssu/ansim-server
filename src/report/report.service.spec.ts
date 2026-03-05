@@ -36,6 +36,7 @@ describe('ReportService', () => {
     execute: jest.fn(),
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
+    loadRelationCountAndMap: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
@@ -72,6 +73,7 @@ describe('ReportService', () => {
     mockQueryBuilder.returning.mockReturnThis();
     mockQueryBuilder.select.mockReturnThis();
     mockQueryBuilder.addSelect.mockReturnThis();
+    mockQueryBuilder.loadRelationCountAndMap.mockReturnThis();
     mockQueryBuilder.where.mockReturnThis();
     mockQueryBuilder.andWhere.mockReturnThis();
     mockQueryBuilder.orderBy.mockReturnThis();
@@ -200,19 +202,19 @@ describe('ReportService', () => {
       expect(result).toEqual([]);
     });
 
-    it('likeCount, commentCount subquery를 addSelect로 추가한다', async () => {
+    it('likeCount, commentCount를 loadRelationCountAndMap으로 추가한다', async () => {
       mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
       mockQueryBuilder.getMany.mockResolvedValue([]);
 
       await service.findNearby(baseQuery);
 
-      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith(
-        expect.stringContaining('likes'),
-        'report_likeCount',
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.likeCount',
+        'report.likes',
       );
-      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith(
-        expect.stringContaining('comments'),
-        'report_commentCount',
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.commentCount',
+        'report.comments',
       );
     });
   });
@@ -242,19 +244,19 @@ describe('ReportService', () => {
       );
     });
 
-    it('likeCount, commentCount subquery를 addSelect로 추가한다', async () => {
+    it('likeCount, commentCount를 loadRelationCountAndMap으로 추가한다', async () => {
       mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
       mockQueryBuilder.getOne.mockResolvedValue(mockReport);
 
       await service.findOne('report-uuid');
 
-      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith(
-        expect.stringContaining('likes'),
-        'report_likeCount',
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.likeCount',
+        'report.likes',
       );
-      expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith(
-        expect.stringContaining('comments'),
-        'report_commentCount',
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.commentCount',
+        'report.comments',
       );
     });
   });
