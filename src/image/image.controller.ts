@@ -3,7 +3,7 @@ import {
   Controller,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -35,7 +35,7 @@ export class ImageController {
 
   @Get(':id')
   @ApiOperation({ summary: '이미지 단건 조회' })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Image> {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Image> {
     return this.imageService.findOne(id);
   }
 

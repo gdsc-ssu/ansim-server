@@ -22,16 +22,11 @@ export class ReportService {
       .into(Report)
       .values({
         userId,
-        imageUrl: dto.imageUrl,
-        latitude: dto.latitude,
-        longitude: dto.longitude,
-        location: () => `ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)`,
         hazardType: dto.hazardType,
         hazardLevel: dto.hazardLevel,
         description: dto.description,
         ...(dto.aiRawResult && { aiRawResult: dto.aiRawResult }),
       })
-      .setParameters({ longitude: dto.longitude, latitude: dto.latitude })
       .returning('id')
       .execute();
 
@@ -44,23 +39,21 @@ export class ReportService {
   async findNearby(query: GetReportsQueryDto): Promise<Report[]> {
     const qb = this.reportRepository
       .createQueryBuilder('report')
+      .innerJoin('report.marker', 'marker')
       .select([
         'report.id',
         'report.userId',
-        'report.imageUrl',
-        'report.latitude',
-        'report.longitude',
         'report.hazardType',
         'report.hazardLevel',
         'report.description',
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'report.likes')
-      .loadRelationCountAndMap('report.commentCount', 'report.comments')
+      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
+      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where(
         `ST_DWithin(
-          report.location::geography,
+          marker.location::geography,
           ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
           :radius
         )`,
@@ -80,20 +73,18 @@ export class ReportService {
   async findOne(id: string): Promise<Report> {
     const report = await this.reportRepository
       .createQueryBuilder('report')
+      .leftJoin('report.marker', 'marker')
       .select([
         'report.id',
         'report.userId',
-        'report.imageUrl',
-        'report.latitude',
-        'report.longitude',
         'report.hazardType',
         'report.hazardLevel',
         'report.description',
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'report.likes')
-      .loadRelationCountAndMap('report.commentCount', 'report.comments')
+      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
+      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where('report.id = :id', { id })
       .getOne();
 

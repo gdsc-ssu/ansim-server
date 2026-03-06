@@ -42,6 +42,7 @@ export class ImageService {
     }
 
     const image = this.imageRepository.create({
+      reportId: dto.reportId,
       url: dto.url,
       mimeType: dto.mimeType,
       size: dto.size,
@@ -50,7 +51,7 @@ export class ImageService {
     return this.imageRepository.save(image);
   }
 
-  async findOne(id: number): Promise<Image> {
+  async findOne(id: string): Promise<Image> {
     const image = await this.imageRepository.findOneBy({ id });
     if (!image) {
       throw new NotFoundException(`Image with id ${id} not found`);

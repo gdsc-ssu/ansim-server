@@ -8,10 +8,6 @@ import { CreateReportDto, GetReportsQueryDto, UpdateReportDto } from './dto';
 const mockReport = {
   id: 'report-uuid',
   userId: 'user-uuid',
-  imageUrl: 'https://example.com/image.jpg',
-  latitude: 37.5665,
-  longitude: 126.978,
-  location: null,
   hazardType: '도로파손',
   hazardLevel: HazardLevel.HIGH,
   description: '도로에 큰 구멍이 있습니다.',
@@ -19,21 +15,20 @@ const mockReport = {
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
   user: null,
-  comments: [],
-  likes: [],
 } as unknown as Report;
 
 describe('ReportService', () => {
   let service: ReportService;
 
-  // QueryBuilder mock — 메서드 체이닝 지원
   const mockQueryBuilder = {
     insert: jest.fn().mockReturnThis(),
     into: jest.fn().mockReturnThis(),
     values: jest.fn().mockReturnThis(),
-    setParameters: jest.fn().mockReturnThis(),
     returning: jest.fn().mockReturnThis(),
     execute: jest.fn(),
+    // innerJoin, leftJoin 추가 — findNearby/findOne에서 marker 조인에 사용
+    innerJoin: jest.fn().mockReturnThis(),
+    leftJoin: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
     loadRelationCountAndMap: jest.fn().mockReturnThis(),
@@ -65,18 +60,19 @@ describe('ReportService', () => {
 
     service = module.get<ReportService>(ReportService);
     jest.clearAllMocks();
-    // QueryBuilder mock 초기화 (ReturnThis가 clearAllMocks로 지워지므로 재설정)
-    mockQueryBuilder.insert.mockReturnThis();
-    mockQueryBuilder.into.mockReturnThis();
-    mockQueryBuilder.values.mockReturnThis();
-    mockQueryBuilder.setParameters.mockReturnThis();
-    mockQueryBuilder.returning.mockReturnThis();
-    mockQueryBuilder.select.mockReturnThis();
-    mockQueryBuilder.addSelect.mockReturnThis();
-    mockQueryBuilder.loadRelationCountAndMap.mockReturnThis();
-    mockQueryBuilder.where.mockReturnThis();
-    mockQueryBuilder.andWhere.mockReturnThis();
-    mockQueryBuilder.orderBy.mockReturnThis();
+    mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.insert.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.into.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.values.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.returning.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.innerJoin.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.leftJoin.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.select.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.addSelect.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.loadRelationCountAndMap.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.where.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.andWhere.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.orderBy.mockReturnValue(mockQueryBuilder);
   });
 
   // ──────────────────────────────────────────────
@@ -84,9 +80,6 @@ describe('ReportService', () => {
   // ──────────────────────────────────────────────
   describe('create', () => {
     const createDto: CreateReportDto = {
-      imageUrl: 'https://example.com/image.jpg',
-      latitude: 37.5665,
-      longitude: 126.978,
       hazardType: '도로파손',
       hazardLevel: HazardLevel.HIGH,
       description: '도로에 큰 구멍이 있습니다.',
@@ -103,10 +96,9 @@ describe('ReportService', () => {
       expect(mockReportRepository.createQueryBuilder).toHaveBeenCalled();
       expect(mockQueryBuilder.insert).toHaveBeenCalled();
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(Report);
-      expect(mockQueryBuilder.setParameters).toHaveBeenCalledWith({
-        longitude: createDto.longitude,
-        latitude: createDto.latitude,
-      });
+      expect(mockQueryBuilder.values).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'user-uuid' }),
+      );
       expect(mockQueryBuilder.returning).toHaveBeenCalledWith('id');
       expect(mockReportRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'report-uuid' },
@@ -210,11 +202,11 @@ describe('ReportService', () => {
 
       expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
         'report.likeCount',
-        'report.likes',
+        'marker.likes',
       );
       expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
         'report.commentCount',
-        'report.comments',
+        'marker.comments',
       );
     });
   });
@@ -252,11 +244,11 @@ describe('ReportService', () => {
 
       expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
         'report.likeCount',
-        'report.likes',
+        'marker.likes',
       );
       expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
         'report.commentCount',
-        'report.comments',
+        'marker.comments',
       );
     });
   });

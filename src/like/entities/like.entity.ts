@@ -6,17 +6,17 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Report } from '../../report/entities/report.entity';
+import { Marker } from '../../marker/entities/marker.entity';
 import { User } from '../../user/entities/user.entity';
 
-@Unique(['reportId', 'userId'])
+@Unique(['markerId', 'userId'])
 @Entity('likes')
 export class Like {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  reportId: string;
+  markerId: string;
 
   @Column()
   userId: string;
@@ -24,8 +24,8 @@ export class Like {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Report, (report) => report.likes, { onDelete: 'CASCADE' })
-  report: Report;
+  @ManyToOne(() => Marker, (marker) => marker.likes, { onDelete: 'CASCADE' })
+  marker: Marker;
 
   @ManyToOne(() => User, (user) => user.likes)
   user: User;
