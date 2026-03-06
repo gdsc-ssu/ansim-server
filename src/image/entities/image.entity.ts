@@ -2,13 +2,18 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Report } from '../../report/entities/report.entity';
 
-@Entity()
+@Entity('images')
 export class Image {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  reportId: string;
 
   @Column()
   url: string;
@@ -16,9 +21,12 @@ export class Image {
   @Column()
   mimeType: string;
 
-  @Column()
-  size: number;
+  @Column({ nullable: true })
+  size: number | null;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @ManyToOne(() => Report, (report) => report.images, { onDelete: 'CASCADE' })
+  report: Report;
 }

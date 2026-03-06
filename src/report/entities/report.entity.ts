@@ -7,8 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Comment } from '../../comment/entities/comment.entity';
-import { Like } from '../../like/entities/like.entity';
+import { Image } from '../../image/entities/image.entity';
 import { User } from '../../user/entities/user.entity';
 
 export enum HazardLevel {
@@ -24,23 +23,6 @@ export class Report {
 
   @Column()
   userId: string;
-
-  @Column()
-  imageUrl: string;
-
-  @Column('decimal', { precision: 10, scale: 7 })
-  latitude: number;
-
-  @Column('decimal', { precision: 10, scale: 7 })
-  longitude: number;
-
-  @Column({
-    type: 'geometry',
-    spatialFeatureType: 'Point',
-    srid: 4326,
-    nullable: true,
-  })
-  location: string;
 
   @Column()
   hazardType: string;
@@ -63,11 +45,8 @@ export class Report {
   @ManyToOne(() => User, (user) => user.reports)
   user: User;
 
-  @OneToMany(() => Comment, (comment) => comment.report)
-  comments: Comment[];
-
-  @OneToMany(() => Like, (like) => like.report)
-  likes: Like[];
+  @OneToMany(() => Image, (image) => image.report)
+  images: Image[];
 
   likeCount: number;
   commentCount: number;
