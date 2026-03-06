@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsUrl, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsUUID, IsUrl, Max, Min } from 'class-validator';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -8,6 +8,9 @@ const ALLOWED_MIME_TYPES = [
 ] as const;
 
 export class SaveImageDto {
+  @IsUUID()
+  reportId: string;
+
   @IsUrl()
   url: string;
 
