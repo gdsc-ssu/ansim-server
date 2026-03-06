@@ -12,6 +12,7 @@ export enum MarkerSource {
   REPORT = 'report',
   SAFETY_MUNGO = 'safety_mungo_report',
 }
+import { Point } from 'geojson';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Like } from '../../like/entities/like.entity';
 import { HazardLevel, Report } from '../../report/entities/report.entity';
@@ -43,7 +44,7 @@ export class Marker {
     srid: 4326,
     nullable: true,
   })
-  location: string | null;
+  location: Point | null;
 
   @Column()
   hazardType: string;
