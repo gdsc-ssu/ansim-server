@@ -4,6 +4,10 @@ export class CreateMarkersTable1772496005000 implements MigrationInterface {
   name = 'CreateMarkersTable1772496005000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `CREATE TYPE "marker_source" AS ENUM ('report', 'safety_mungo_report')`,
+    );
+
     await queryRunner.query(`
       CREATE TABLE "markers" (
         "id"                   UUID          NOT NULL DEFAULT gen_random_uuid(),
@@ -15,6 +19,7 @@ export class CreateMarkersTable1772496005000 implements MigrationInterface {
         "longitude"            DECIMAL(10,7) NOT NULL,
         -- lat/lng 기반 공간 인덱스용, 별도 계산 시점이 있으므로 nullable
         "location"             GEOMETRY(Point, 4326),
+        "source"               marker_source NOT NULL,
         "hazardType"           VARCHAR       NOT NULL,
         -- 안전신문고 출처 마커는 위험 등급 정보가 없으므로 nullable
         "hazardLevel"          hazard_level,
@@ -37,5 +42,6 @@ export class CreateMarkersTable1772496005000 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX "IDX_markers_location"`);
     await queryRunner.query(`DROP TABLE "markers"`);
+    await queryRunner.query(`DROP TYPE "marker_source"`);
   }
 }

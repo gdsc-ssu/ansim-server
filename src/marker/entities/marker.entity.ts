@@ -7,6 +7,11 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+export enum MarkerSource {
+  REPORT = 'report',
+  SAFETY_MUNGO = 'safety_mungo_report',
+}
 import { Comment } from '../../comment/entities/comment.entity';
 import { Like } from '../../like/entities/like.entity';
 import { HazardLevel, Report } from '../../report/entities/report.entity';
@@ -22,6 +27,9 @@ export class Marker {
 
   @Column({ nullable: true, unique: true })
   safetyMungoReportId: string | null;
+
+  @Column({ type: 'enum', enum: MarkerSource })
+  source: MarkerSource;
 
   @Column('decimal', { precision: 10, scale: 7 })
   latitude: number;
