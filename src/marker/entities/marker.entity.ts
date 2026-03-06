@@ -2,9 +2,12 @@ import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Comment } from '../../comment/entities/comment.entity';
+import { Like } from '../../like/entities/like.entity';
 import { HazardLevel, Report } from '../../report/entities/report.entity';
 import { SafetyMungoReport } from '../../safety-mungo-report/entities/safety-mungo-report.entity';
 
@@ -46,4 +49,10 @@ export class Marker {
   @OneToOne(() => SafetyMungoReport, (smr) => smr.marker)
   @JoinColumn({ name: 'safetyMungoReportId' })
   safetyMungoReport: SafetyMungoReport | null;
+
+  @OneToMany(() => Comment, (comment) => comment.marker)
+  comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.marker)
+  likes: Like[];
 }

@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Report } from '../../report/entities/report.entity';
+import { Marker } from '../../marker/entities/marker.entity';
 import { User } from '../../user/entities/user.entity';
 
 @Entity('comments')
@@ -14,7 +14,7 @@ export class Comment {
   id: string;
 
   @Column()
-  reportId: string;
+  markerId: string;
 
   @Column()
   userId: string;
@@ -25,8 +25,8 @@ export class Comment {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Report, (report) => report.comments, { onDelete: 'CASCADE' })
-  report: Report;
+  @ManyToOne(() => Marker, (marker) => marker.comments, { onDelete: 'CASCADE' })
+  marker: Marker;
 
   @ManyToOne(() => User, (user) => user.comments)
   user: User;
