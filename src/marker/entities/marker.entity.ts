@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
@@ -55,4 +56,7 @@ export class Marker {
 
   @OneToMany(() => Like, (like) => like.marker)
   likes: Like[];
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

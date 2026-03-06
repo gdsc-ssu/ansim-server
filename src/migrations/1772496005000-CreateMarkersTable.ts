@@ -18,6 +18,7 @@ export class CreateMarkersTable1772496005000 implements MigrationInterface {
         "hazardType"           VARCHAR       NOT NULL,
         -- 안전신문고 출처 마커는 위험 등급 정보가 없으므로 nullable
         "hazardLevel"          hazard_level,
+        "createdAt"            TIMESTAMPTZ   NOT NULL DEFAULT now(),
         CONSTRAINT "PK_markers" PRIMARY KEY ("id"),
         -- 신고 삭제 시 마커도 함께 삭제 (댓글, 공감 cascade로 연쇄 삭제됨)
         CONSTRAINT "FK_markers_reportId"
