@@ -4,10 +4,12 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Image } from '../../image/entities/image.entity';
+import { Marker } from '../../marker/entities/marker.entity';
 import { User } from '../../user/entities/user.entity';
 
 export enum HazardLevel {
@@ -47,6 +49,9 @@ export class Report {
 
   @OneToMany(() => Image, (image) => image.report)
   images: Image[];
+
+  @OneToOne(() => Marker, (marker) => marker.report)
+  marker: Marker;
 
   likeCount: number;
   commentCount: number;

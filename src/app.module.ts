@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { ImageModule } from './image/image.module';
 import { ReportModule } from './report/report.module';
 import { SafetyMungoReportModule } from './safety-mungo-report/safety-mungo-report.module';
+import { MarkerModule } from './marker/marker.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SafetyMungoReportModule } from './safety-mungo-report/safety-mungo-repo
     ImageModule,
     ReportModule,
     SafetyMungoReportModule,
+    MarkerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
+import { Marker } from '../../marker/entities/marker.entity';
 
 @Entity('safety_mungo_reports')
 export class SafetyMungoReport {
@@ -25,4 +26,7 @@ export class SafetyMungoReport {
 
   @Column({ type: 'timestamp', nullable: true })
   syncedAt: Date | null;
+
+  @OneToOne(() => Marker, (marker) => marker.safetyMungoReport)
+  marker: Marker;
 }
