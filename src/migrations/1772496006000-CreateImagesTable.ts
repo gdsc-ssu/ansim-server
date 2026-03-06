@@ -10,7 +10,7 @@ export class CreateImagesTable1772496006000 implements MigrationInterface {
         "reportId"  UUID      NOT NULL,
         "url"       VARCHAR   NOT NULL,
         "mimeType"  VARCHAR   NOT NULL,
-        "size"      BIGINT,
+        "size"      INTEGER,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "PK_images" PRIMARY KEY ("id"),
         -- 신고 삭제 시 이미지도 함께 삭제

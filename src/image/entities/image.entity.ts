@@ -21,7 +21,7 @@ export class Image {
   @Column()
   mimeType: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   size: number | null;
 
   @CreateDateColumn()
