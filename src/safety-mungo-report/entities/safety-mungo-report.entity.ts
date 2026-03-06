@@ -4,7 +4,7 @@ import { Marker } from '../../marker/entities/marker.entity';
 @Entity('safety_mungo_reports')
 export class SafetyMungoReport {
   @PrimaryColumn()
-  externalReportId: string;
+  id: string;
 
   @Column({ nullable: true })
   externalId: string | null;
