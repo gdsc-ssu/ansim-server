@@ -8,6 +8,7 @@ import { databaseConfig } from './database.config';
 import { UserModule } from './user/user.module';
 import { ImageModule } from './image/image.module';
 import { ReportModule } from './report/report.module';
+import { SafetyMungoReportModule } from './safety-mungo-report/safety-mungo-report.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ReportModule } from './report/report.module';
     AuthModule,
     ImageModule,
     ReportModule,
+    SafetyMungoReportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
