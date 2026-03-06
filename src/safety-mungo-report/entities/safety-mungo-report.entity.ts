@@ -22,7 +22,7 @@ export class SafetyMungoReport {
   origin: string | null;
 
   @Column({ type: 'date', nullable: true })
-  occurenceDate: Date | null;
+  occurrenceDate: Date | null;
 
   @Column({ type: 'timestamp', nullable: true })
   syncedAt: Date | null;
