@@ -1,0 +1,1 @@
+export const DISTRIBUTED_LOCK = Symbol('DISTRIBUTED_LOCK');
