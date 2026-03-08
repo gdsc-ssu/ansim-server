@@ -46,6 +46,8 @@ export class MarkerService {
           source: MarkerSource.REPORT,
           latitude: dto.latitude,
           longitude: dto.longitude,
+          location: () =>
+            `ST_SetSRID(ST_MakePoint(${dto.longitude}, ${dto.latitude}), 4326)`,
           hazardType: dto.hazardType,
           hazardLevel: dto.hazardLevel,
         })
@@ -53,11 +55,6 @@ export class MarkerService {
         .execute();
 
       const markerId = markerResult.identifiers[0].id as string;
-
-      await manager.query(
-        `UPDATE markers SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326) WHERE id = $3`,
-        [dto.longitude, dto.latitude, markerId],
-      );
 
       const marker = await manager.findOne(Marker, {
         where: { id: markerId },
@@ -158,30 +155,20 @@ export class MarkerService {
     }
 
     return this.dataSource.transaction(async (manager) => {
-      if (
-        dto.hazardType !== undefined ||
-        dto.hazardLevel !== undefined ||
-        dto.description !== undefined
-      ) {
-        await manager.update(Report, marker.reportId!, {
-          ...(dto.hazardType !== undefined && { hazardType: dto.hazardType }),
-          ...(dto.hazardLevel !== undefined && {
-            hazardLevel: dto.hazardLevel,
-          }),
-          ...(dto.description !== undefined && {
-            description: dto.description,
-          }),
-        });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { description, ...markerUpdates } = dto;
+
+      const promises: Promise<unknown>[] = [];
+
+      if (Object.keys(dto).length > 0) {
+        promises.push(manager.update(Report, marker.reportId!, dto));
       }
 
-      if (dto.hazardType !== undefined || dto.hazardLevel !== undefined) {
-        await manager.update(Marker, id, {
-          ...(dto.hazardType !== undefined && { hazardType: dto.hazardType }),
-          ...(dto.hazardLevel !== undefined && {
-            hazardLevel: dto.hazardLevel,
-          }),
-        });
+      if (Object.keys(markerUpdates).length > 0) {
+        promises.push(manager.update(Marker, id, markerUpdates));
       }
+
+      await Promise.all(promises);
 
       const updated = await manager.findOne(Marker, {
         where: { id },
