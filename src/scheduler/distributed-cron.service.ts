@@ -13,8 +13,8 @@ import { DISTRIBUTED_LOCK } from './scheduler.constants';
  *
  *   @Cron(CronExpression.EVERY_MINUTE)
  *   async handleTask(): Promise<void> {
- *     await this.cronService.runWithLock('my-task', async () => {
- *       // 실제 작업 로직
+ *     await this.cronService.runWithLock('my-task', () => {
+ *       // 동기/비동기 작업 모두 가능
  *     });
  *   }
  * }
@@ -31,7 +31,7 @@ export class DistributedCronService {
 
   async runWithLock(
     taskName: string,
-    task: () => Promise<void>,
+    task: () => Promise<void> | void,
   ): Promise<void> {
     const acquired = await this.lock.tryAcquire(taskName);
     if (!acquired) {
