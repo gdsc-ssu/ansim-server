@@ -87,7 +87,8 @@ export class MarkerService {
         )`,
         { lng: query.lng, lat: query.lat, radius: query.radius },
       )
-      .orderBy('marker.createdAt', 'DESC');
+      .orderBy('marker.createdAt', 'DESC')
+      .take(query.limit ?? 100);
 
     if (query.hazardType) {
       qb.andWhere('marker.hazardType = :hazardType', {

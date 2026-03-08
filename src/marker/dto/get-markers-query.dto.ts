@@ -35,4 +35,11 @@ export class GetMarkersQueryDto {
   @IsOptional()
   @IsEnum(MarkerSource)
   source?: MarkerSource;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(200)
+  @Type(() => Number)
+  limit?: number;
 }
