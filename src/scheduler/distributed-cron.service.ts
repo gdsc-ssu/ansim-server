@@ -2,6 +2,24 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { DistributedLock } from './interfaces/distributed-lock.interface';
 import { DISTRIBUTED_LOCK } from './scheduler.constants';
 
+/**
+ * 분산 환경에서 크론 작업의 중복 실행을 방지하는 서비스.
+ *
+ * @example
+ * ```ts
+ * @Injectable()
+ * export class MyScheduler {
+ *   constructor(private readonly cronService: DistributedCronService) {}
+ *
+ *   @Cron(CronExpression.EVERY_MINUTE)
+ *   async handleTask(): Promise<void> {
+ *     await this.cronService.runWithLock('my-task', async () => {
+ *       // 실제 작업 로직
+ *     });
+ *   }
+ * }
+ * ```
+ */
 @Injectable()
 export class DistributedCronService {
   private readonly logger = new Logger(DistributedCronService.name);
