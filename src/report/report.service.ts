@@ -31,21 +31,7 @@ export class ReportService {
       .execute();
 
     const id = result.identifiers[0].id as string;
-    const report = await this.reportRepository
-      .createQueryBuilder('report')
-      .select([
-        'report.id',
-        'report.userId',
-        'report.hazardType',
-        'report.hazardLevel',
-        'report.description',
-        'report.createdAt',
-        'report.updatedAt',
-      ])
-      .where('report.id = :id', { id })
-      .getOne();
-    if (!report) throw new NotFoundException('신고를 찾을 수 없습니다.');
-    return report;
+    return this.findOne(id);
   }
 
   async findNearby(query: GetReportsQueryDto): Promise<Report[]> {
@@ -144,6 +130,7 @@ export class ReportService {
   async findByUser(userId: string): Promise<Report[]> {
     return this.reportRepository
       .createQueryBuilder('report')
+      .leftJoin('report.marker', 'marker')
       .select([
         'report.id',
         'report.userId',
@@ -153,6 +140,8 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
+      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
+      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where('report.userId = :userId', { userId })
       .orderBy('report.createdAt', 'DESC')
       .getMany();

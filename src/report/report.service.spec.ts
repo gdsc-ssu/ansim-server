@@ -87,22 +87,39 @@ describe('ReportService', () => {
       description: '도로에 큰 구멍이 있습니다.',
     };
 
-    it('신고를 정상적으로 생성하고 반환한다', async () => {
+    it('신고를 정상적으로 생성하고 likeCount/commentCount를 포함해 반환한다', async () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
-      mockQueryBuilder.getOne.mockResolvedValue(mockReport);
+      mockQueryBuilder.getOne.mockResolvedValue({
+        ...mockReport,
+        likeCount: 0,
+        commentCount: 0,
+      });
 
       const result = await service.create('user-uuid', createDto);
 
-      expect(mockReportRepository.createQueryBuilder).toHaveBeenCalled();
       expect(mockQueryBuilder.insert).toHaveBeenCalled();
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(Report);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'user-uuid' }),
       );
       expect(mockQueryBuilder.returning).toHaveBeenCalledWith('id');
-      expect(result).toEqual(mockReport);
+      // insert 후 findOne(id)를 호출해 likeCount/commentCount 로드
+      expect(mockQueryBuilder.leftJoin).toHaveBeenCalledWith(
+        'report.marker',
+        'marker',
+      );
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.likeCount',
+        'marker.likes',
+      );
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.commentCount',
+        'marker.comments',
+      );
+      expect(result.likeCount).toBe(0);
+      expect(result.commentCount).toBe(0);
     });
 
     it('aiRawResult는 DB에 저장되지만 응답에서 제외된다', async () => {
@@ -113,17 +130,12 @@ describe('ReportService', () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
-      // getOne은 aiRawResult 없는 결과만 반환 (select로 제외됨을 시뮬레이션)
-      const mockReportWithoutAi = {
-        id: mockReport.id,
-        userId: mockReport.userId,
-        hazardType: mockReport.hazardType,
-        hazardLevel: mockReport.hazardLevel,
-        description: mockReport.description,
-        createdAt: mockReport.createdAt,
-        updatedAt: mockReport.updatedAt,
-      } as unknown as Report;
-      mockQueryBuilder.getOne.mockResolvedValue(mockReportWithoutAi);
+      // findOne 내부 getOne은 aiRawResult 없이 반환 (select로 제외됨)
+      mockQueryBuilder.getOne.mockResolvedValue({
+        ...mockReport,
+        likeCount: 0,
+        commentCount: 0,
+      });
 
       const result = await service.create('user-uuid', dtoWithAi);
 
@@ -133,7 +145,7 @@ describe('ReportService', () => {
       expect(result.aiRawResult).toBeUndefined();
     });
 
-    it('insert 후 getOne이 null이면 NotFoundException을 던진다', async () => {
+    it('insert 후 신고를 찾을 수 없으면 NotFoundException을 던진다', async () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
@@ -381,6 +393,18 @@ describe('ReportService', () => {
       const result = await service.findByUser('user-uuid');
 
       expect(mockReportRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(mockQueryBuilder.leftJoin).toHaveBeenCalledWith(
+        'report.marker',
+        'marker',
+      );
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.likeCount',
+        'marker.likes',
+      );
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
+        'report.commentCount',
+        'marker.comments',
+      );
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'report.userId = :userId',
         { userId: 'user-uuid' },
