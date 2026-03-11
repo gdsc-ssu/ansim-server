@@ -28,6 +28,7 @@
     "migration:run": "pnpm typeorm migration:run",
     "migration:revert": "pnpm typeorm migration:revert",
     "migration:drop": "pnpm typeorm schema:drop",
+    "seed:markers": "ts-node -r tsconfig-paths/register src/scripts/seed-markers.ts",
     "prepare": "husky"
   },
   "dependencies": {
