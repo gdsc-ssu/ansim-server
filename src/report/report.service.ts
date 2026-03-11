@@ -47,8 +47,6 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
-      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where(
         `ST_DWithin(
           marker.location::geography,
@@ -71,7 +69,6 @@ export class ReportService {
   async findOne(id: string): Promise<Report> {
     const report = await this.reportRepository
       .createQueryBuilder('report')
-      .leftJoin('report.marker', 'marker')
       .select([
         'report.id',
         'report.userId',
@@ -81,8 +78,6 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
-      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where('report.id = :id', { id })
       .getOne();
 
@@ -130,7 +125,6 @@ export class ReportService {
   async findByUser(userId: string): Promise<Report[]> {
     return this.reportRepository
       .createQueryBuilder('report')
-      .leftJoin('report.marker', 'marker')
       .select([
         'report.id',
         'report.userId',
@@ -140,8 +134,6 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
-      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where('report.userId = :userId', { userId })
       .orderBy('report.createdAt', 'DESC')
       .getMany();

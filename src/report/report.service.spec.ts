@@ -86,15 +86,11 @@ describe('ReportService', () => {
       description: '도로에 큰 구멍이 있습니다.',
     };
 
-    it('신고를 정상적으로 생성하고 likeCount/commentCount를 포함해 반환한다', async () => {
+    it('신고를 정상적으로 생성하고 반환한다', async () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
-      mockQueryBuilder.getOne.mockResolvedValue({
-        ...mockReport,
-        likeCount: 0,
-        commentCount: 0,
-      });
+      mockQueryBuilder.getOne.mockResolvedValue(mockReport);
 
       const result = await service.create('user-uuid', createDto);
 
@@ -104,21 +100,7 @@ describe('ReportService', () => {
         expect.objectContaining({ userId: 'user-uuid' }),
       );
       expect(mockQueryBuilder.returning).toHaveBeenCalledWith('id');
-      // insert 후 findOne(id)를 호출해 likeCount/commentCount 로드
-      expect(mockQueryBuilder.leftJoin).toHaveBeenCalledWith(
-        'report.marker',
-        'marker',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.likeCount',
-        'marker.likes',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.commentCount',
-        'marker.comments',
-      );
-      expect(result.likeCount).toBe(0);
-      expect(result.commentCount).toBe(0);
+      expect(result).toEqual(mockReport);
     });
 
     it('aiRawResult는 DB에 저장되지만 응답에서 제외된다', async () => {
@@ -213,22 +195,6 @@ describe('ReportService', () => {
 
       expect(result).toEqual([]);
     });
-
-    it('likeCount, commentCount를 loadRelationCountAndMap으로 추가한다', async () => {
-      mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      mockQueryBuilder.getMany.mockResolvedValue([]);
-
-      await service.findNearby(baseQuery);
-
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.likeCount',
-        'marker.likes',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.commentCount',
-        'marker.comments',
-      );
-    });
   });
 
   // ──────────────────────────────────────────────
@@ -253,22 +219,6 @@ describe('ReportService', () => {
 
       await expect(service.findOne('nonexistent-id')).rejects.toThrow(
         new NotFoundException('신고를 찾을 수 없습니다.'),
-      );
-    });
-
-    it('likeCount, commentCount를 loadRelationCountAndMap으로 추가한다', async () => {
-      mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      mockQueryBuilder.getOne.mockResolvedValue(mockReport);
-
-      await service.findOne('report-uuid');
-
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.likeCount',
-        'marker.likes',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.commentCount',
-        'marker.comments',
       );
     });
   });
@@ -392,18 +342,6 @@ describe('ReportService', () => {
       const result = await service.findByUser('user-uuid');
 
       expect(mockReportRepository.createQueryBuilder).toHaveBeenCalled();
-      expect(mockQueryBuilder.leftJoin).toHaveBeenCalledWith(
-        'report.marker',
-        'marker',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.likeCount',
-        'marker.likes',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.commentCount',
-        'marker.comments',
-      );
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'report.userId = :userId',
         { userId: 'user-uuid' },
