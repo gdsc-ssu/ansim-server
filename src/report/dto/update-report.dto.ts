@@ -1,16 +1,23 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { HazardLevel } from '../entities/report.entity';
 
 export class UpdateReportDto {
+  @ApiPropertyOptional({ description: '위험 유형', example: '화재' })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   hazardType?: string;
 
+  @ApiPropertyOptional({ description: '위험 등급', enum: HazardLevel })
   @IsOptional()
   @IsEnum(HazardLevel)
   hazardLevel?: HazardLevel;
 
+  @ApiPropertyOptional({
+    description: '신고 내용',
+    example: '건물에서 연기가 납니다.',
+  })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
