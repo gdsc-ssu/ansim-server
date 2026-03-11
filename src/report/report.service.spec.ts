@@ -11,7 +11,6 @@ const mockReport = {
   hazardType: '도로파손',
   hazardLevel: HazardLevel.HIGH,
   description: '도로에 큰 구멍이 있습니다.',
-  aiRawResult: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
   user: null,
@@ -36,6 +35,7 @@ describe('ReportService', () => {
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     getOne: jest.fn(),
+    getOneOrFail: jest.fn(),
     getMany: jest.fn(),
   };
 
@@ -73,6 +73,7 @@ describe('ReportService', () => {
     mockQueryBuilder.where.mockReturnValue(mockQueryBuilder);
     mockQueryBuilder.andWhere.mockReturnValue(mockQueryBuilder);
     mockQueryBuilder.orderBy.mockReturnValue(mockQueryBuilder);
+    mockQueryBuilder.getOneOrFail.mockReturnValue(mockQueryBuilder);
   });
 
   // ──────────────────────────────────────────────
@@ -89,24 +90,20 @@ describe('ReportService', () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
-      mockReportRepository.findOne.mockResolvedValue(mockReport);
+      mockQueryBuilder.getOne.mockResolvedValue(mockReport);
 
       const result = await service.create('user-uuid', createDto);
 
-      expect(mockReportRepository.createQueryBuilder).toHaveBeenCalled();
       expect(mockQueryBuilder.insert).toHaveBeenCalled();
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(Report);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'user-uuid' }),
       );
       expect(mockQueryBuilder.returning).toHaveBeenCalledWith('id');
-      expect(mockReportRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'report-uuid' },
-      });
       expect(result).toEqual(mockReport);
     });
 
-    it('aiRawResult를 포함해서 신고를 생성한다', async () => {
+    it('aiRawResult는 DB에 저장되지만 응답에서 제외된다', async () => {
       const dtoWithAi: CreateReportDto = {
         ...createDto,
         aiRawResult: { label: 'pothole', confidence: 0.95 },
@@ -114,21 +111,26 @@ describe('ReportService', () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
-      mockReportRepository.findOne.mockResolvedValue({
+      // findOne 내부 getOne은 aiRawResult 없이 반환 (select로 제외됨)
+      mockQueryBuilder.getOne.mockResolvedValue({
         ...mockReport,
-        aiRawResult: dtoWithAi.aiRawResult,
+        likeCount: 0,
+        commentCount: 0,
       });
 
       const result = await service.create('user-uuid', dtoWithAi);
 
-      expect(result.aiRawResult).toEqual(dtoWithAi.aiRawResult);
+      expect(mockQueryBuilder.values).toHaveBeenCalledWith(
+        expect.objectContaining({ aiRawResult: dtoWithAi.aiRawResult }),
+      );
+      expect(result.aiRawResult).toBeUndefined();
     });
 
-    it('insert 후 findOne이 null이면 NotFoundException을 던진다', async () => {
+    it('insert 후 신고를 찾을 수 없으면 NotFoundException을 던진다', async () => {
       mockQueryBuilder.execute.mockResolvedValue({
         identifiers: [{ id: 'report-uuid' }],
       });
-      mockReportRepository.findOne.mockResolvedValue(null);
+      mockQueryBuilder.getOne.mockResolvedValue(null);
 
       await expect(service.create('user-uuid', createDto)).rejects.toThrow(
         new NotFoundException('신고를 찾을 수 없습니다.'),
@@ -193,22 +195,6 @@ describe('ReportService', () => {
 
       expect(result).toEqual([]);
     });
-
-    it('likeCount, commentCount를 loadRelationCountAndMap으로 추가한다', async () => {
-      mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      mockQueryBuilder.getMany.mockResolvedValue([]);
-
-      await service.findNearby(baseQuery);
-
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.likeCount',
-        'marker.likes',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.commentCount',
-        'marker.comments',
-      );
-    });
   });
 
   // ──────────────────────────────────────────────
@@ -235,22 +221,6 @@ describe('ReportService', () => {
         new NotFoundException('신고를 찾을 수 없습니다.'),
       );
     });
-
-    it('likeCount, commentCount를 loadRelationCountAndMap으로 추가한다', async () => {
-      mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      mockQueryBuilder.getOne.mockResolvedValue(mockReport);
-
-      await service.findOne('report-uuid');
-
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.likeCount',
-        'marker.likes',
-      );
-      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalledWith(
-        'report.commentCount',
-        'marker.comments',
-      );
-    });
   });
 
   // ──────────────────────────────────────────────
@@ -264,11 +234,9 @@ describe('ReportService', () => {
 
     it('본인 신고를 정상적으로 수정한다', async () => {
       mockReportRepository.findOne.mockResolvedValue({ ...mockReport });
-      const updatedReport = {
-        ...mockReport,
-        ...updateDto,
-      };
-      mockReportRepository.save.mockResolvedValue(updatedReport);
+      mockReportRepository.save.mockResolvedValue(undefined);
+      const updatedReport = { ...mockReport, ...updateDto };
+      mockQueryBuilder.getOneOrFail.mockResolvedValue(updatedReport);
 
       const result = await service.update(
         'report-uuid',
@@ -280,6 +248,7 @@ describe('ReportService', () => {
         where: { id: 'report-uuid' },
       });
       expect(mockReportRepository.save).toHaveBeenCalled();
+      expect(mockQueryBuilder.getOneOrFail).toHaveBeenCalled();
       expect(result.description).toBe(updateDto.description);
       expect(result.hazardLevel).toBe(updateDto.hazardLevel);
     });
@@ -287,7 +256,8 @@ describe('ReportService', () => {
     it('dto에 일부 필드만 있어도 해당 필드만 수정한다', async () => {
       mockReportRepository.findOne.mockResolvedValue({ ...mockReport });
       const partialDto: UpdateReportDto = { hazardType: '화재위험' };
-      mockReportRepository.save.mockResolvedValue({
+      mockReportRepository.save.mockResolvedValue(undefined);
+      mockQueryBuilder.getOneOrFail.mockResolvedValue({
         ...mockReport,
         hazardType: '화재위험',
       });
@@ -367,19 +337,24 @@ describe('ReportService', () => {
   // ──────────────────────────────────────────────
   describe('findByUser', () => {
     it('유저의 신고 목록을 최신순으로 반환한다', async () => {
-      mockReportRepository.find.mockResolvedValue([mockReport]);
+      mockQueryBuilder.getMany.mockResolvedValue([mockReport]);
 
       const result = await service.findByUser('user-uuid');
 
-      expect(mockReportRepository.find).toHaveBeenCalledWith({
-        where: { userId: 'user-uuid' },
-        order: { createdAt: 'DESC' },
-      });
+      expect(mockReportRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+        'report.userId = :userId',
+        { userId: 'user-uuid' },
+      );
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+        'report.createdAt',
+        'DESC',
+      );
       expect(result).toEqual([mockReport]);
     });
 
     it('신고가 없는 유저는 빈 배열을 반환한다', async () => {
-      mockReportRepository.find.mockResolvedValue([]);
+      mockQueryBuilder.getMany.mockResolvedValue([]);
 
       const result = await service.findByUser('user-uuid');
 

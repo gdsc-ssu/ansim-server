@@ -31,9 +31,7 @@ export class ReportService {
       .execute();
 
     const id = result.identifiers[0].id as string;
-    const report = await this.reportRepository.findOne({ where: { id } });
-    if (!report) throw new NotFoundException('신고를 찾을 수 없습니다.');
-    return report;
+    return this.findOne(id);
   }
 
   async findNearby(query: GetReportsQueryDto): Promise<Report[]> {
@@ -49,8 +47,6 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
-      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where(
         `ST_DWithin(
           marker.location::geography,
@@ -73,7 +69,6 @@ export class ReportService {
   async findOne(id: string): Promise<Report> {
     const report = await this.reportRepository
       .createQueryBuilder('report')
-      .leftJoin('report.marker', 'marker')
       .select([
         'report.id',
         'report.userId',
@@ -83,8 +78,6 @@ export class ReportService {
         'report.createdAt',
         'report.updatedAt',
       ])
-      .loadRelationCountAndMap('report.likeCount', 'marker.likes')
-      .loadRelationCountAndMap('report.commentCount', 'marker.comments')
       .where('report.id = :id', { id })
       .getOne();
 
@@ -103,7 +96,21 @@ export class ReportService {
       throw new ForbiddenException('본인 신고만 수정할 수 있습니다.');
 
     Object.assign(report, dto);
-    return this.reportRepository.save(report);
+    await this.reportRepository.save(report);
+
+    return this.reportRepository
+      .createQueryBuilder('report')
+      .select([
+        'report.id',
+        'report.userId',
+        'report.hazardType',
+        'report.hazardLevel',
+        'report.description',
+        'report.createdAt',
+        'report.updatedAt',
+      ])
+      .where('report.id = :id', { id })
+      .getOneOrFail();
   }
 
   async remove(id: string, userId: string): Promise<void> {
@@ -116,9 +123,19 @@ export class ReportService {
   }
 
   async findByUser(userId: string): Promise<Report[]> {
-    return this.reportRepository.find({
-      where: { userId },
-      order: { createdAt: 'DESC' },
-    });
+    return this.reportRepository
+      .createQueryBuilder('report')
+      .select([
+        'report.id',
+        'report.userId',
+        'report.hazardType',
+        'report.hazardLevel',
+        'report.description',
+        'report.createdAt',
+        'report.updatedAt',
+      ])
+      .where('report.userId = :userId', { userId })
+      .orderBy('report.createdAt', 'DESC')
+      .getMany();
   }
 }

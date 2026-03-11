@@ -52,7 +52,4 @@ export class Report {
 
   @OneToOne(() => Marker, (marker) => marker.report)
   marker: Marker;
-
-  likeCount: number;
-  commentCount: number;
 }
