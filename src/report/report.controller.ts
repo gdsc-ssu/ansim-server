@@ -66,7 +66,11 @@ export class ReportController {
 
   @Get(':id')
   @ApiOperation({ summary: '신고 단건 조회' })
-  @ApiParam({ name: 'id', description: '신고 ID (UUID)' })
+  @ApiParam({
+    name: 'id',
+    description: '신고 ID (UUID)',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
   @ApiResponse({ status: 200, type: ReportResponseDto })
   @ApiNotFoundResponse({ description: '해당 ID의 신고를 찾을 수 없음' })
   findOne(@Param('id') id: string): Promise<ReportResponseDto> {
@@ -77,7 +81,11 @@ export class ReportController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '신고 수정 (본인만)' })
-  @ApiParam({ name: 'id', description: '신고 ID (UUID)' })
+  @ApiParam({
+    name: 'id',
+    description: '신고 ID (UUID)',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
   @ApiResponse({ status: 200, type: ReportResponseDto })
   @ApiBadRequestResponse({ description: '요청 바디 유효성 검증 실패' })
   @ApiUnauthorizedResponse({
@@ -98,7 +106,11 @@ export class ReportController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '신고 삭제 (본인만)' })
-  @ApiParam({ name: 'id', description: '신고 ID (UUID)' })
+  @ApiParam({
+    name: 'id',
+    description: '신고 ID (UUID)',
+    example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  })
   @ApiResponse({ status: 204, description: '삭제 성공' })
   @ApiUnauthorizedResponse({
     description: 'Authorization 헤더 없음 또는 만료된 Access Token',
