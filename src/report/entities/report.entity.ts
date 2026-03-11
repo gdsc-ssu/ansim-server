@@ -53,6 +53,6 @@ export class Report {
   @OneToOne(() => Marker, (marker) => marker.report)
   marker: Marker;
 
-  likeCount: number;
-  commentCount: number;
+  likeCount: number = 0;
+  commentCount: number = 0;
 }

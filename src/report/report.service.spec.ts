@@ -11,7 +11,6 @@ const mockReport = {
   hazardType: '도로파손',
   hazardLevel: HazardLevel.HIGH,
   description: '도로에 큰 구멍이 있습니다.',
-  aiRawResult: null,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
   user: null,
