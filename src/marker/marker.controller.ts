@@ -15,13 +15,21 @@ import {
 import { Request } from 'express';
 import {
   ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { User } from '../user/entities/user.entity';
-import { CreateMarkerDto, GetMarkersQueryDto, UpdateMarkerDto } from './dto';
+import {
+  CreateMarkerDto,
+  GetMarkersQueryDto,
+  MarkerDetailResponseDto,
+  MarkerResponseDto,
+  UpdateMarkerDto,
+} from './dto';
 import { MarkerService } from './marker.service';
 
 @ApiTags('Markers')
@@ -33,7 +41,10 @@ export class MarkerController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '마커 생성 (신고 + 마커 동시 생성)' })
-  @ApiResponse({ status: 201, description: '마커 생성 성공' })
+  @ApiCreatedResponse({
+    type: MarkerDetailResponseDto,
+    description: '마커 생성 성공',
+  })
   @ApiResponse({ status: 400, description: '잘못된 요청 (유효성 검증 실패)' })
   @ApiResponse({ status: 401, description: '인증 필요' })
   create(@Body() dto: CreateMarkerDto, @Req() req: Request & { user: User }) {
@@ -42,7 +53,7 @@ export class MarkerController {
 
   @Get()
   @ApiOperation({ summary: '반경 내 마커 목록 조회' })
-  @ApiResponse({ status: 200, description: '마커 목록 반환' })
+  @ApiOkResponse({ type: [MarkerResponseDto], description: '마커 목록 반환' })
   @ApiResponse({
     status: 400,
     description: '잘못된 요청 (좌표/반경 유효성 실패)',
@@ -53,7 +64,10 @@ export class MarkerController {
 
   @Get(':id')
   @ApiOperation({ summary: '마커 단건 조회' })
-  @ApiResponse({ status: 200, description: '마커 상세 반환' })
+  @ApiOkResponse({
+    type: MarkerDetailResponseDto,
+    description: '마커 상세 반환',
+  })
   @ApiResponse({ status: 404, description: '마커 없음' })
   findOne(@Param('id') id: string) {
     return this.markerService.findOne(id);
@@ -63,7 +77,10 @@ export class MarkerController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '마커 수정 (REPORT 타입, 본인만)' })
-  @ApiResponse({ status: 200, description: '수정된 마커 반환' })
+  @ApiOkResponse({
+    type: MarkerDetailResponseDto,
+    description: '수정된 마커 반환',
+  })
   @ApiResponse({ status: 400, description: '잘못된 요청' })
   @ApiResponse({ status: 401, description: '인증 필요' })
   @ApiResponse({
