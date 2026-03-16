@@ -83,26 +83,25 @@ export class AnalysisService implements OnModuleInit {
   ): Promise<{ inlineData: { data: string; mimeType: string } }[]> {
     const results = await Promise.all(
       urls.map(async (url) => {
-        let response: Response;
         try {
-          response = await fetch(url);
-        } catch {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const buffer = await response.arrayBuffer();
+          const mimeType = response.headers.get('content-type') ?? 'image/jpeg';
+
+          return {
+            inlineData: {
+              data: Buffer.from(buffer).toString('base64'),
+              mimeType,
+            },
+          };
+        } catch (error) {
+          this.logger.warn(`이미지 fetch 실패 ${url}: ${String(error)}`);
           throw new BadRequestException(`이미지를 가져올 수 없습니다: ${url}`);
         }
-
-        if (!response.ok) {
-          throw new BadRequestException(`이미지를 가져올 수 없습니다: ${url}`);
-        }
-
-        const buffer = await response.arrayBuffer();
-        const mimeType = response.headers.get('content-type') ?? 'image/jpeg';
-
-        return {
-          inlineData: {
-            data: Buffer.from(buffer).toString('base64'),
-            mimeType,
-          },
-        };
       }),
     );
 
