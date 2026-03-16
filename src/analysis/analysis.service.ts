@@ -73,8 +73,7 @@ export class AnalysisService implements OnModuleInit {
   }
 
   private validateGcsUrls(urls: string[]): void {
-    const invalid = urls.filter((url) => !url.startsWith(GCS_URL_PREFIX));
-    if (invalid.length > 0) {
+    if (urls.some((url) => !url.startsWith(GCS_URL_PREFIX))) {
       throw new BadRequestException('GCS에 저장된 이미지 URL만 허용됩니다.');
     }
   }
