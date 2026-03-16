@@ -120,7 +120,8 @@ export class AnalysisService implements OnModuleInit {
         { text: USER_PROMPT },
       ]);
 
-      const text = result.response.text().trim();
+      const raw = result.response.text().trim();
+      const text = raw.replace(/^```(?:json)?\s*|\s*```$/g, '').trim();
       return JSON.parse(text) as GeminiAnalysisResponse;
     } catch (error) {
       if (attempt < 2) {
