@@ -11,6 +11,7 @@ import { ReportModule } from './report/report.module';
 import { SafetyMungoReportModule } from './safety-mungo-report/safety-mungo-report.module';
 import { MarkerModule } from './marker/marker.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { AnalysisModule } from './analysis/analysis.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     ReportModule,
     SafetyMungoReportModule,
     MarkerModule,
+    AnalysisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
