@@ -18,9 +18,9 @@ import { AnalyzeImageDto, AnalysisResultDto } from './dto';
 export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}
 
-  @Post('analyze')
+  @Post()
   @ApiOperation({ summary: '이미지 위험도 분석' })
-  @ApiResponse({ status: 200, type: AnalysisResultDto })
+  @ApiResponse({ status: 201, type: AnalysisResultDto })
   @ApiBadRequestResponse({
     description: 'GCS URL이 아니거나 이미지 fetch 실패',
   })
