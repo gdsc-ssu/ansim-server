@@ -11,6 +11,7 @@ jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
     getGenerativeModel: jest.fn().mockReturnValue({}),
   })),
+  SchemaType: { OBJECT: 'OBJECT', STRING: 'STRING' },
 }));
 
 const GCS_URL = 'https://storage.googleapis.com/test-bucket/images/test.jpg';
@@ -142,22 +143,6 @@ describe('AnalysisService', () => {
       expect(result).toEqual({ hazardType: 'SINKHOLE', hazardLevel: 'MEDIUM' });
     });
 
-    it('마크다운 코드블록으로 감싸진 응답도 정상 파싱한다', async () => {
-      mockGenerateContent.mockResolvedValue({
-        response: {
-          text: jest
-            .fn()
-            .mockReturnValue(
-              '```json\n{"hazardType":"FIRE","hazardLevel":"HIGH"}\n```',
-            ),
-        },
-      });
-
-      const result = await service.analyze([GCS_URL]);
-
-      expect(result).toEqual({ hazardType: 'FIRE', hazardLevel: 'HIGH' });
-    });
-
     it('hazardType이 NONE이면 UnprocessableEntityException을 던진다', async () => {
       mockGenerateContent.mockResolvedValue(
         mockGeminiResponse({ hazardType: 'NONE', hazardLevel: 'LOW' }),
@@ -168,30 +153,13 @@ describe('AnalysisService', () => {
       );
     });
 
-    it('JSON 파싱 1회 실패 후 성공하면 결과를 반환한다', async () => {
-      mockGenerateContent
-        .mockResolvedValueOnce({
-          response: { text: jest.fn().mockReturnValue('invalid json') },
-        })
-        .mockResolvedValueOnce(
-          mockGeminiResponse({ hazardType: 'FLOOD', hazardLevel: 'HIGH' }),
-        );
-
-      const result = await service.analyze([GCS_URL]);
-
-      expect(result).toEqual({ hazardType: 'FLOOD', hazardLevel: 'HIGH' });
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
-    });
-
-    it('JSON 파싱 2회 모두 실패하면 InternalServerErrorException을 던진다', async () => {
-      mockGenerateContent.mockResolvedValue({
-        response: { text: jest.fn().mockReturnValue('invalid json') },
-      });
+    it('Gemini 호출 실패 시 InternalServerErrorException을 던진다', async () => {
+      mockGenerateContent.mockRejectedValue(new Error('API error'));
 
       await expect(service.analyze([GCS_URL])).rejects.toThrow(
         InternalServerErrorException,
       );
-      expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
     });
   });
 });
