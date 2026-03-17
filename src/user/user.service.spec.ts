@@ -14,7 +14,13 @@ describe('UserService', () => {
     email: 'test@example.com',
     name: 'Test User',
     profileImage: 'https://example.com/photo.jpg',
+    address: '',
+    nearbyDangerAlert: true,
+    emergencyAlert: true,
     createdAt: new Date(),
+    reports: [],
+    comments: [],
+    likes: [],
   };
 
   beforeEach(async () => {

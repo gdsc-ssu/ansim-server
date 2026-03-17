@@ -26,6 +26,15 @@ export class User {
   @Column({ nullable: true })
   profileImage: string;
 
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ default: true })
+  nearbyDangerAlert: boolean;
+
+  @Column({ default: true })
+  emergencyAlert: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
