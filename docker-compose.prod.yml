@@ -5,6 +5,8 @@ services:
       target: production
     ports:
       - '21000:3000'
+    volumes:
+      - ./gcp-service-account-key.json:/app/gcp-service-account-key.json:ro
     env_file:
       - .env
     restart: unless-stopped
