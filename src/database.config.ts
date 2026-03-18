@@ -9,5 +9,5 @@ export const databaseConfig: DataSourceOptions = {
   database: process.env.DATABASE_NAME ?? 'ansim',
   entities: ['dist/**/*.entity.js'],
   migrations: ['dist/migrations/*.js'],
-  synchronize: process.env.NODE_ENV !== 'production',
+  synchronize: false,
 };
