@@ -2,6 +2,23 @@ import { ApiProperty } from '@nestjs/swagger';
 import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 import { MarkerSource } from '../entities/marker.entity';
 
+export class ImageInReportDto {
+  @ApiProperty({ description: '이미지 ID (UUID)' })
+  id: string;
+
+  @ApiProperty({ description: '이미지 URL' })
+  url: string;
+
+  @ApiProperty({ description: 'MIME 타입', example: 'image/jpeg' })
+  mimeType: string;
+
+  @ApiProperty({ description: '파일 크기 (bytes)', nullable: true })
+  size: number | null;
+
+  @ApiProperty({ description: '생성 시각 (ISO 8601)' })
+  createdAt: Date;
+}
+
 export class ReportInMarkerDto {
   @ApiProperty({
     description: '신고 ID (UUID)',
@@ -27,6 +44,12 @@ export class ReportInMarkerDto {
     required: false,
   })
   aiRawResult: object | null;
+
+  @ApiProperty({
+    description: '첨부 이미지 목록',
+    type: [ImageInReportDto],
+  })
+  images: ImageInReportDto[];
 
   @ApiProperty({
     description: '생성 시각 (ISO 8601)',

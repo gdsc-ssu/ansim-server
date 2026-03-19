@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { Image } from '../image/entities/image.entity';
 import { Report } from '../report/entities/report.entity';
 import { Marker, MarkerSource } from './entities/marker.entity';
 import { CreateMarkerDto, GetMarkersQueryDto, UpdateMarkerDto } from './dto';
@@ -37,6 +38,22 @@ export class MarkerService {
 
       const reportId = reportResult.identifiers[0].id as string;
 
+      if (dto.images?.length) {
+        await manager
+          .createQueryBuilder()
+          .insert()
+          .into(Image)
+          .values(
+            dto.images.map((img) => ({
+              reportId,
+              url: img.url,
+              mimeType: img.mimeType,
+              size: img.size,
+            })),
+          )
+          .execute();
+      }
+
       const markerResult = await manager
         .createQueryBuilder()
         .insert()
@@ -58,7 +75,7 @@ export class MarkerService {
 
       const marker = await manager.findOne(Marker, {
         where: { id: markerId },
-        relations: ['report'],
+        relations: ['report', 'report.images'],
       });
       if (!marker) throw new NotFoundException('마커를 찾을 수 없습니다.');
       return marker;
@@ -107,6 +124,7 @@ export class MarkerService {
     const marker = await this.markerRepository
       .createQueryBuilder('marker')
       .leftJoin('marker.report', 'report')
+      .leftJoin('report.images', 'image')
       .leftJoin('marker.safetyMungoReport', 'safetyMungoReport')
       .select([
         'marker.id',
@@ -122,6 +140,11 @@ export class MarkerService {
         'report.aiRawResult',
         'report.createdAt',
         'report.updatedAt',
+        'image.id',
+        'image.url',
+        'image.mimeType',
+        'image.size',
+        'image.createdAt',
         'safetyMungoReport.id',
         'safetyMungoReport.spotName',
         'safetyMungoReport.category',

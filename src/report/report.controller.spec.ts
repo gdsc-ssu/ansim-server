@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReportController } from './report.controller';
 import { ReportService } from './report.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { HazardLevel } from '../common/enums/hazard.enum';
+import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
 import { Report } from './entities/report.entity';
 import { CreateReportDto, GetReportsQueryDto, UpdateReportDto } from './dto';
 import { Request } from 'express';
@@ -27,7 +27,7 @@ const mockReport = {
   latitude: 37.5665,
   longitude: 126.978,
   location: null,
-  hazardType: '도로파손',
+  hazardType: HazardType.ROAD_DAMAGE,
   hazardLevel: HazardLevel.HIGH,
   description: '도로에 큰 구멍이 있습니다.',
   aiRawResult: null,
@@ -173,7 +173,7 @@ describe('ReportController', () => {
         imageUrl: 'https://example.com/image.jpg',
         latitude: 37.5665,
         longitude: 126.978,
-        hazardType: '도로파손',
+        hazardType: HazardType.ROAD_DAMAGE,
         hazardLevel: HazardLevel.HIGH,
         description: '도로에 큰 구멍이 있습니다.',
       };

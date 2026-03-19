@@ -2,7 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { HazardLevel } from '../common/enums/hazard.enum';
+import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
 import { Report } from '../report/entities/report.entity';
 import { CreateMarkerDto, GetMarkersQueryDto, UpdateMarkerDto } from './dto';
 import { Marker, MarkerSource } from './entities/marker.entity';
@@ -11,7 +11,7 @@ import { MarkerService } from './marker.service';
 const mockReport = {
   id: 'report-uuid',
   userId: 'user-uuid',
-  hazardType: '도로파손',
+  hazardType: HazardType.ROAD_DAMAGE,
   hazardLevel: HazardLevel.HIGH,
   description: '도로에 큰 구멍이 있습니다.',
   aiRawResult: null,
@@ -25,7 +25,7 @@ const mockMarker = {
   source: MarkerSource.REPORT,
   latitude: 37.5665,
   longitude: 126.978,
-  hazardType: '도로파손',
+  hazardType: HazardType.ROAD_DAMAGE,
   hazardLevel: HazardLevel.HIGH,
   location: null,
   report: mockReport,
@@ -124,7 +124,7 @@ describe('MarkerService', () => {
     const createDto: CreateMarkerDto = {
       latitude: 37.5665,
       longitude: 126.978,
-      hazardType: '도로파손',
+      hazardType: HazardType.ROAD_DAMAGE,
       hazardLevel: HazardLevel.HIGH,
       description: '도로에 큰 구멍이 있습니다.',
     };
@@ -153,7 +153,7 @@ describe('MarkerService', () => {
       );
       expect(mockManager.findOne).toHaveBeenCalledWith(Marker, {
         where: { id: 'marker-uuid' },
-        relations: ['report'],
+        relations: ['report', 'report.images'],
       });
       expect(result).toEqual(mockMarker);
     });
@@ -228,11 +228,14 @@ describe('MarkerService', () => {
     it('hazardType 필터가 있으면 andWhere를 호출한다', async () => {
       mockQueryBuilder.getMany.mockResolvedValue([mockMarker]);
 
-      await service.findNearby({ ...baseQuery, hazardType: '도로파손' });
+      await service.findNearby({
+        ...baseQuery,
+        hazardType: HazardType.ROAD_DAMAGE,
+      });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'marker.hazardType = :hazardType',
-        { hazardType: '도로파손' },
+        { hazardType: HazardType.ROAD_DAMAGE },
       );
     });
 
@@ -308,7 +311,7 @@ describe('MarkerService', () => {
   // ──────────────────────────────────────────────
   describe('update', () => {
     const updateDto: UpdateMarkerDto = {
-      hazardType: '화재위험',
+      hazardType: HazardType.FIRE,
       hazardLevel: HazardLevel.MEDIUM,
       description: '수정된 설명입니다.',
     };
