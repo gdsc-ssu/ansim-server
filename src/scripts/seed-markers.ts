@@ -2,8 +2,8 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { databaseConfig } from '../database.config';
 import { User } from '../user/entities/user.entity';
+import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
 import { Report } from '../report/entities/report.entity';
-import { HazardLevel } from '../report/entities/report.entity';
 import { Marker, MarkerSource } from '../marker/entities/marker.entity';
 
 const dataSource = new DataSource({
@@ -12,7 +12,7 @@ const dataSource = new DataSource({
 });
 
 interface SeedMarker {
-  hazardType: string;
+  hazardType: HazardType;
   hazardLevel: HazardLevel;
   description: string;
   latitude: number;
@@ -22,70 +22,70 @@ interface SeedMarker {
 // 숭실대 중심(37.4964, 126.9572) 주변 좌표
 const SEED_DATA: SeedMarker[] = [
   {
-    hazardType: '도로파손',
+    hazardType: HazardType.ROAD_DAMAGE,
     hazardLevel: HazardLevel.HIGH,
     description: '도로 포트홀이 크게 발생하여 차량 통행에 위험',
     latitude: 37.4971,
     longitude: 126.9568,
   },
   {
-    hazardType: '가로등고장',
+    hazardType: HazardType.OTHER,
     hazardLevel: HazardLevel.MEDIUM,
     description: '가로등 불빛이 꺼져 야간 보행이 위험',
     latitude: 37.4955,
     longitude: 126.9583,
   },
   {
-    hazardType: '보도블록파손',
+    hazardType: HazardType.ROAD_DAMAGE,
     hazardLevel: HazardLevel.LOW,
     description: '보도블록이 들떠 있어 보행 시 걸림 위험',
     latitude: 37.4978,
     longitude: 126.9555,
   },
   {
-    hazardType: '공사구간',
+    hazardType: HazardType.CONSTRUCTION,
     hazardLevel: HazardLevel.HIGH,
     description: '건물 철거 공사 중 안전 펜스 미설치',
     latitude: 37.4948,
     longitude: 126.959,
   },
   {
-    hazardType: '침수위험',
+    hazardType: HazardType.FLOOD,
     hazardLevel: HazardLevel.HIGH,
     description: '배수로 막혀 폭우 시 침수 반복 발생',
     latitude: 37.496,
     longitude: 126.9545,
   },
   {
-    hazardType: '신호등고장',
+    hazardType: HazardType.TRAFFIC,
     hazardLevel: HazardLevel.MEDIUM,
     description: '교차로 신호등이 간헐적으로 작동하지 않음',
     latitude: 37.4983,
     longitude: 126.9578,
   },
   {
-    hazardType: '가드레일파손',
+    hazardType: HazardType.TRAFFIC,
     hazardLevel: HazardLevel.MEDIUM,
     description: '사고로 인한 가드레일 파손 방치',
     latitude: 37.4942,
     longitude: 126.9562,
   },
   {
-    hazardType: '낙석위험',
+    hazardType: HazardType.LANDSLIDE,
     hazardLevel: HazardLevel.HIGH,
     description: '절개지 암석이 불안정하여 낙석 위험',
     latitude: 37.4968,
     longitude: 126.9598,
   },
   {
-    hazardType: '미끄러운도로',
+    hazardType: HazardType.ROAD_DAMAGE,
     hazardLevel: HazardLevel.LOW,
     description: '낙엽이 쌓여 비올 때 차량 미끄러짐 주의',
     latitude: 37.499,
     longitude: 126.956,
   },
   {
-    hazardType: '불법주정차',
+    hazardType: HazardType.TRAFFIC,
     hazardLevel: HazardLevel.LOW,
     description: '소방차 진입로에 불법 주정차 빈번',
     latitude: 37.4952,
