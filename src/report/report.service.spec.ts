@@ -2,7 +2,8 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ReportService } from './report.service';
-import { Report, HazardLevel } from './entities/report.entity';
+import { HazardLevel } from '../common/enums/hazard.enum';
+import { Report } from './entities/report.entity';
 import { CreateReportDto, GetReportsQueryDto, UpdateReportDto } from './dto';
 
 const mockReport = {

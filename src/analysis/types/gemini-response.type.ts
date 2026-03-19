@@ -1,21 +1,11 @@
-export const HAZARD_TYPES = [
-  'FIRE',
-  'FLOOD',
-  'LANDSLIDE',
-  'SINKHOLE',
-  'ROAD_DAMAGE',
-  'COLLAPSE',
-  'BUILDING_DAMAGE',
-  'CHEMICAL',
-  'TRAFFIC',
-  'CONSTRUCTION',
-  'OTHER',
-  'NONE',
-] as const;
+import { HazardType } from '../../common/enums/hazard.enum';
 
-export type HazardType = (typeof HAZARD_TYPES)[number];
+export const HAZARD_TYPES = Object.values(HazardType);
+
+/** Gemini AI 분석 시에만 사용되는 NONE 포함 타입 */
+export type GeminiHazardType = HazardType | 'NONE';
 
 export type GeminiAnalysisResponse = {
-  hazardType: HazardType;
+  hazardType: GeminiHazardType;
   hazardLevel: 'LOW' | 'MEDIUM' | 'HIGH';
 };

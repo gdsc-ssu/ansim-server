@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HazardLevel } from '../../report/entities/report.entity';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 import { MarkerSource } from '../entities/marker.entity';
 
 export class ReportInMarkerDto {
@@ -89,8 +89,12 @@ export class MarkerResponseDto {
   @ApiProperty({ description: '경도', example: 126.9568 })
   longitude: number;
 
-  @ApiProperty({ description: '위험 유형', example: '도로파손' })
-  hazardType: string;
+  @ApiProperty({
+    description: '위험 유형',
+    enum: HazardType,
+    example: HazardType.ROAD_DAMAGE,
+  })
+  hazardType: HazardType;
 
   @ApiProperty({
     description: '위험 등급 (nullable)',

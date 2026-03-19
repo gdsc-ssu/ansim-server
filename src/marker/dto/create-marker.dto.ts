@@ -8,7 +8,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { HazardLevel } from '../../report/entities/report.entity';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 
 export class CreateMarkerDto {
   @IsNumber()
@@ -21,9 +21,8 @@ export class CreateMarkerDto {
   @Max(180)
   longitude: number;
 
-  @IsString()
-  @IsNotEmpty()
-  hazardType: string;
+  @IsEnum(HazardType)
+  hazardType: HazardType;
 
   @IsEnum(HazardLevel)
   hazardLevel: HazardLevel;

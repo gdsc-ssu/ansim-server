@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { AnalysisController } from './analysis.controller';
 import { AnalysisService } from './analysis.service';
-import { HazardLevel } from '../report/entities/report.entity';
+import { HazardLevel } from '../common/enums/hazard.enum';
 
 describe('AnalysisController', () => {
   let controller: AnalysisController;

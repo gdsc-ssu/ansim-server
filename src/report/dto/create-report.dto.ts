@@ -6,13 +6,16 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { HazardLevel } from '../entities/report.entity';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 
 export class CreateReportDto {
-  @ApiProperty({ description: '위험 유형', example: '화재' })
-  @IsString()
-  @IsNotEmpty()
-  hazardType: string;
+  @ApiProperty({
+    description: '위험 유형',
+    enum: HazardType,
+    example: HazardType.FIRE,
+  })
+  @IsEnum(HazardType)
+  hazardType: HazardType;
 
   @ApiProperty({ description: '위험 등급', enum: HazardLevel })
   @IsEnum(HazardLevel)

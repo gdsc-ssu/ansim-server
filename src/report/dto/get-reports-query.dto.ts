@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { HazardType } from '../../common/enums/hazard.enum';
 
 export class GetReportsQueryDto {
   @ApiProperty({ description: '위도', example: 37.5665 })
@@ -24,8 +25,8 @@ export class GetReportsQueryDto {
   @Type(() => Number)
   radius: number;
 
-  @ApiPropertyOptional({ description: '위험 유형 필터', example: '화재' })
+  @ApiPropertyOptional({ description: '위험 유형 필터', enum: HazardType })
   @IsOptional()
-  @IsString()
-  hazardType?: string;
+  @IsEnum(HazardType)
+  hazardType?: HazardType;
 }

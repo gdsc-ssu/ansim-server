@@ -8,15 +8,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 import { Image } from '../../image/entities/image.entity';
 import { Marker } from '../../marker/entities/marker.entity';
 import { User } from '../../user/entities/user.entity';
-
-export enum HazardLevel {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-}
 
 @Entity('reports')
 export class Report {
@@ -26,8 +21,8 @@ export class Report {
   @Column()
   userId: string;
 
-  @Column()
-  hazardType: string;
+  @Column({ type: 'enum', enum: HazardType })
+  hazardType: HazardType;
 
   @Column({ type: 'enum', enum: HazardLevel })
   hazardLevel: HazardLevel;

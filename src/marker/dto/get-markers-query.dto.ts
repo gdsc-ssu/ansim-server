@@ -1,12 +1,6 @@
 import { Type } from 'class-transformer';
-import {
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { HazardType } from '../../common/enums/hazard.enum';
 import { MarkerSource } from '../entities/marker.entity';
 
 export class GetMarkersQueryDto {
@@ -29,8 +23,8 @@ export class GetMarkersQueryDto {
   radius: number;
 
   @IsOptional()
-  @IsString()
-  hazardType?: string;
+  @IsEnum(HazardType)
+  hazardType?: HazardType;
 
   @IsOptional()
   @IsEnum(MarkerSource)

@@ -15,7 +15,8 @@ export enum MarkerSource {
 import { Point } from 'geojson';
 import { Comment } from '../../comment/entities/comment.entity';
 import { Like } from '../../like/entities/like.entity';
-import { HazardLevel, Report } from '../../report/entities/report.entity';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
+import { Report } from '../../report/entities/report.entity';
 import { SafetyMungoReport } from '../../safety-mungo-report/entities/safety-mungo-report.entity';
 
 @Entity('markers')
@@ -46,8 +47,8 @@ export class Marker {
   })
   location: Point | null;
 
-  @Column()
-  hazardType: string;
+  @Column({ type: 'enum', enum: HazardType })
+  hazardType: HazardType;
 
   @Column({ type: 'enum', enum: HazardLevel, nullable: true })
   hazardLevel: HazardLevel | null;

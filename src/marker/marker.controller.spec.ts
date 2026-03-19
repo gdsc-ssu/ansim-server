@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
-import { HazardLevel } from '../report/entities/report.entity';
+import { HazardLevel } from '../common/enums/hazard.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { User } from '../user/entities/user.entity';
 import { CreateMarkerDto, GetMarkersQueryDto, UpdateMarkerDto } from './dto';
