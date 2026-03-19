@@ -1,171 +1,151 @@
 import 'dotenv/config';
-import * as fs from 'fs';
-import * as path from 'path';
 import { DataSource } from 'typeorm';
 import { databaseConfig } from '../database.config';
 import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
+import { User } from '../user/entities/user.entity';
+import { Report } from '../report/entities/report.entity';
 import { Marker, MarkerSource } from '../marker/entities/marker.entity';
-import { SafetyMungoReport } from '../safety-mungo-report/entities/safety-mungo-report.entity';
-
-const BATCH_SIZE = 100;
 
 const dataSource = new DataSource({
   ...databaseConfig,
   entities: ['src/**/*.entity.ts'],
 });
 
-interface RawReport {
-  externalReportId: string;
-  externalId: string | null;
-  spotName: string | null;
-  category: string | null;
-  description: string | null;
-  origin: string | null;
-  occurenceDate: string | null;
-  syncedAt: string | null;
-}
-
-interface RawMarker {
-  externalReportId: string;
+interface SeedMarker {
+  hazardType: HazardType;
+  hazardLevel: HazardLevel;
+  description: string;
   latitude: number;
   longitude: number;
-  hazardType: string;
-  hazardLevel: string | null;
 }
 
-async function* streamJsonLines<T>(filePath: string): AsyncGenerator<T> {
-  const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
-  let partial = '';
-  for await (const chunk of stream) {
-    const lines = (partial + (chunk as string)).split('\n');
-    partial = lines.pop()!;
-    for (const line of lines) {
-      const trimmed = line.replace(/\r$/, '').trim();
-      if (!trimmed || trimmed === '[' || trimmed === ']') continue;
-      const cleaned = trimmed.endsWith(',') ? trimmed.slice(0, -1) : trimmed;
-      yield JSON.parse(cleaned) as T;
-    }
-  }
-  if (partial.trim() && partial.trim() !== ']') {
-    const trimmed = partial.replace(/\r$/, '').trim();
-    const cleaned = trimmed.endsWith(',') ? trimmed.slice(0, -1) : trimmed;
-    yield JSON.parse(cleaned) as T;
-  }
-}
+// 숭실대 중심(37.4964, 126.9572) 주변 좌표
+const SEED_DATA: SeedMarker[] = [
+  {
+    hazardType: HazardType.ROAD_DAMAGE,
+    hazardLevel: HazardLevel.HIGH,
+    description: '도로 포트홀이 크게 발생하여 차량 통행에 위험',
+    latitude: 37.4971,
+    longitude: 126.9568,
+  },
+  {
+    hazardType: HazardType.OTHER,
+    hazardLevel: HazardLevel.MEDIUM,
+    description: '가로등 불빛이 꺼져 야간 보행이 위험',
+    latitude: 37.4955,
+    longitude: 126.9583,
+  },
+  {
+    hazardType: HazardType.ROAD_DAMAGE,
+    hazardLevel: HazardLevel.LOW,
+    description: '보도블록이 들떠 있어 보행 시 걸림 위험',
+    latitude: 37.4978,
+    longitude: 126.9555,
+  },
+  {
+    hazardType: HazardType.CONSTRUCTION,
+    hazardLevel: HazardLevel.HIGH,
+    description: '건물 철거 공사 중 안전 펜스 미설치',
+    latitude: 37.4948,
+    longitude: 126.959,
+  },
+  {
+    hazardType: HazardType.FLOOD,
+    hazardLevel: HazardLevel.HIGH,
+    description: '배수로 막혀 폭우 시 침수 반복 발생',
+    latitude: 37.496,
+    longitude: 126.9545,
+  },
+  {
+    hazardType: HazardType.ROAD_DAMAGE,
+    hazardLevel: HazardLevel.MEDIUM,
+    description: '교차로 신호등이 간헐적으로 작동하지 않음',
+    latitude: 37.4983,
+    longitude: 126.9578,
+  },
+  {
+    hazardType: HazardType.ROAD_DAMAGE,
+    hazardLevel: HazardLevel.MEDIUM,
+    description: '사고로 인한 가드레일 파손 방치',
+    latitude: 37.4942,
+    longitude: 126.9562,
+  },
+  {
+    hazardType: HazardType.LANDSLIDE,
+    hazardLevel: HazardLevel.HIGH,
+    description: '절개지 암석이 불안정하여 낙석 위험',
+    latitude: 37.4968,
+    longitude: 126.9598,
+  },
+  {
+    hazardType: HazardType.ROAD_DAMAGE,
+    hazardLevel: HazardLevel.LOW,
+    description: '낙엽이 쌓여 비올 때 차량 미끄러짐 주의',
+    latitude: 37.499,
+    longitude: 126.956,
+  },
+  {
+    hazardType: HazardType.OTHER,
+    hazardLevel: HazardLevel.LOW,
+    description: '소방차 진입로에 불법 주정차 빈번',
+    latitude: 37.4952,
+    longitude: 126.9575,
+  },
+];
 
 async function seed() {
   await dataSource.initialize();
   console.log('DB 연결 완료');
 
-  try {
-    const smrRepo = dataSource.getRepository(SafetyMungoReport);
-    const markerRepo = dataSource.getRepository(Marker);
+  await dataSource.transaction(async (manager) => {
+    // 시드 전용 유저 (upsert)
+    const userRepo = manager.getRepository(User);
+    let user = await userRepo.findOneBy({ googleId: 'seed-user-google-id' });
+    if (!user) {
+      user = await userRepo.save(
+        userRepo.create({
+          googleId: 'seed-user-google-id',
+          email: 'seed@example.com',
+          name: 'Seed User',
+        }),
+      );
+    }
 
-    // Pass 1: safety_mungo_reports.json → SafetyMungoReport 배치 삽입
-    console.log('\n[1/2] SafetyMungoReport 삽입 중...');
-    let smrCount = 0;
-    let smrBatch: SafetyMungoReport[] = [];
+    const reportRepo = manager.getRepository(Report);
+    const markerRepo = manager.getRepository(Marker);
 
-    for await (const r of streamJsonLines<RawReport>(
-      path.resolve(__dirname, 'data/safety_mungo_reports.json'),
-    )) {
-      smrBatch.push(
-        smrRepo.create({
-          id: r.externalReportId,
-          externalId: r.externalId ?? null,
-          spotName: r.spotName ?? null,
-          category: r.category ?? null,
-          description: r.description ?? null,
-          origin: r.origin ?? null,
-          occurrenceDate: r.occurenceDate ?? null,
-          syncedAt: r.syncedAt ? new Date(r.syncedAt) : new Date(),
+    for (const item of SEED_DATA) {
+      const report = await reportRepo.save(
+        reportRepo.create({
+          userId: user.id,
+          hazardType: item.hazardType,
+          hazardLevel: item.hazardLevel,
+          description: item.description,
         }),
       );
 
-      if (smrBatch.length >= BATCH_SIZE) {
-        await smrRepo
-          .createQueryBuilder()
-          .insert()
-          .into(SafetyMungoReport)
-          .values(smrBatch)
-          .orIgnore()
-          .execute();
-        smrCount += smrBatch.length;
-        smrBatch = [];
-        if (smrCount % 1000 === 0) {
-          console.log(`  진행: ${smrCount.toLocaleString()}건`);
-        }
-      }
-    }
-    if (smrBatch.length > 0) {
-      await smrRepo
-        .createQueryBuilder()
-        .insert()
-        .into(SafetyMungoReport)
-        .values(smrBatch)
-        .orIgnore()
-        .execute();
-      smrCount += smrBatch.length;
-    }
-    console.log(`  완료: ${smrCount.toLocaleString()}건 처리`);
-
-    // Pass 2: marker.json → Marker 배치 삽입
-    console.log('\n[2/2] Marker 삽입 중...');
-    let markerCount = 0;
-    let markerBatch: Marker[] = [];
-
-    for await (const m of streamJsonLines<RawMarker>(
-      path.resolve(__dirname, 'data/marker.json'),
-    )) {
-      markerBatch.push(
+      await markerRepo.save(
         markerRepo.create({
-          safetyMungoReportId: m.externalReportId,
-          source: MarkerSource.SAFETY_MUNGO,
-          latitude: m.latitude,
-          longitude: m.longitude,
+          reportId: report.id,
+          source: MarkerSource.REPORT,
+          latitude: item.latitude,
+          longitude: item.longitude,
           location: {
             type: 'Point',
-            coordinates: [m.longitude, m.latitude],
+            coordinates: [item.longitude, item.latitude],
           },
-          hazardType: m.hazardType as HazardType,
-          hazardLevel: m.hazardLevel as HazardLevel | null,
+          hazardType: item.hazardType,
+          hazardLevel: item.hazardLevel,
         }),
       );
 
-      if (markerBatch.length >= BATCH_SIZE) {
-        await markerRepo
-          .createQueryBuilder()
-          .insert()
-          .into(Marker)
-          .values(markerBatch)
-          .orIgnore()
-          .execute();
-        markerCount += markerBatch.length;
-        markerBatch = [];
-        if (markerCount % 1000 === 0) {
-          console.log(`  진행: ${markerCount.toLocaleString()}건`);
-        }
-      }
+      console.log(`  생성: [${item.hazardLevel}] ${item.hazardType}`);
     }
-    if (markerBatch.length > 0) {
-      await markerRepo
-        .createQueryBuilder()
-        .insert()
-        .into(Marker)
-        .values(markerBatch)
-        .orIgnore()
-        .execute();
-      markerCount += markerBatch.length;
-    }
-    console.log(`  완료: ${markerCount.toLocaleString()}건 처리`);
 
-    console.log('\n시드 완료');
-  } catch (err) {
-    console.error('시드 실패:', err);
-    process.exit(1);
-  } finally {
-    await dataSource.destroy();
-  }
+    console.log(`\n시드 완료: ${SEED_DATA.length}건의 Marker 생성`);
+  });
+
+  await dataSource.destroy();
 }
 
 void seed();
