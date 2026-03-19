@@ -30,6 +30,7 @@
     "migration:show": "pnpm typeorm migration:show",
     "migration:drop": "pnpm typeorm schema:drop",
     "seed:markers": "ts-node -r tsconfig-paths/register src/scripts/seed-markers.ts",
+    "seed:safety-mungo": "ts-node -r tsconfig-paths/register src/scripts/seed-safety-mungo.ts",
     "prepare": "husky"
   },
   "dependencies": {
