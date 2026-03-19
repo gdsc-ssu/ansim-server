@@ -1,11 +1,10 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { HazardLevel } from '../../report/entities/report.entity';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 
 export class UpdateMarkerDto {
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  hazardType?: string;
+  @IsEnum(HazardType)
+  hazardType?: HazardType;
 
   @IsOptional()
   @IsEnum(HazardLevel)

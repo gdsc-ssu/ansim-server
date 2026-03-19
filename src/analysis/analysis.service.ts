@@ -14,7 +14,7 @@ import {
   GeminiAnalysisResponse,
   HAZARD_TYPES,
 } from './types/gemini-response.type';
-import { HazardLevel } from '../report/entities/report.entity';
+import { HazardLevel } from '../common/enums/hazard.enum';
 
 const MAX_IMAGES = 5;
 
@@ -36,7 +36,7 @@ const RESPONSE_SCHEMA: Schema = {
     hazardType: {
       type: SchemaType.STRING,
       format: 'enum',
-      enum: [...HAZARD_TYPES],
+      enum: [...HAZARD_TYPES, 'NONE'],
     },
     hazardLevel: {
       type: SchemaType.STRING,

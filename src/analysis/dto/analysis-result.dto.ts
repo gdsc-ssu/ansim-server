@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HazardLevel } from '../../report/entities/report.entity';
+import { HazardLevel, HazardType } from '../../common/enums/hazard.enum';
 
 export class AnalysisResultDto {
   @ApiProperty({
     description: '위험 유형',
-    example: 'SINKHOLE',
+    enum: HazardType,
+    example: HazardType.SINKHOLE,
   })
-  hazardType: string;
+  hazardType: HazardType;
 
   @ApiProperty({
     description: '위험 정도',
