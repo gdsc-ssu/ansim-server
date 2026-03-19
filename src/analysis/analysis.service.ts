@@ -24,10 +24,17 @@ const SYSTEM_INSTRUCTION = `당신은 공공 안전 위험 분석 전문가입�
 const USER_PROMPT = `이 이미지에서 위험 요소를 분석하세요.
 
 각 유형 판단 기준:
+- FIRE: 화재, 연기, 불꽃이 보이는 경우
+- FLOOD: 침수, 도로나 건물에 물이 범람한 경우
+- LANDSLIDE: 산사태, 토사 붕괴, 절개지 붕괴
 - SINKHOLE: 도로 함몰, 방사형 균열, 맨홀 주변 침하 등 싱크홀 전조 증상
 - ROAD_DAMAGE: 포트홀, 도로 균열, 맨홀 뚜껑 파손, 경계석 손상
-- BUILDING_DAMAGE: 건물 외벽 균열, 기울음, 외장재 탈락
 - COLLAPSE: 구조물이 무너지거나 낙하물 위험이 있는 상태
+- BUILDING_DAMAGE: 건물 외벽 균열, 기울음, 외장재 탈락
+- CHEMICAL: 화학물질 누출, 유해물질 방류, 오염 흔적
+- TRAFFIC: 교통사고, 도로 위 장애물, 신호등 파손
+- CONSTRUCTION: 공사 현장 안전 미비, 가설 구조물 위험
+- OTHER: 위 유형에 해당하지 않는 기타 위험 요소
 - NONE: 이미지에서 위험 요소를 찾을 수 없는 경우`;
 
 const RESPONSE_SCHEMA: Schema = {
