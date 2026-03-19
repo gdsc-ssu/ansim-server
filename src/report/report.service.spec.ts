@@ -2,14 +2,14 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ReportService } from './report.service';
-import { HazardLevel } from '../common/enums/hazard.enum';
+import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
 import { Report } from './entities/report.entity';
 import { CreateReportDto, GetReportsQueryDto, UpdateReportDto } from './dto';
 
 const mockReport = {
   id: 'report-uuid',
   userId: 'user-uuid',
-  hazardType: '도로파손',
+  hazardType: HazardType.ROAD_DAMAGE,
   hazardLevel: HazardLevel.HIGH,
   description: '도로에 큰 구멍이 있습니다.',
   createdAt: new Date('2024-01-01'),
@@ -82,7 +82,7 @@ describe('ReportService', () => {
   // ──────────────────────────────────────────────
   describe('create', () => {
     const createDto: CreateReportDto = {
-      hazardType: '도로파손',
+      hazardType: HazardType.ROAD_DAMAGE,
       hazardLevel: HazardLevel.HIGH,
       description: '도로에 큰 구멍이 있습니다.',
     };
@@ -171,11 +171,14 @@ describe('ReportService', () => {
       mockReportRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
       mockQueryBuilder.getMany.mockResolvedValue([mockReport]);
 
-      await service.findNearby({ ...baseQuery, hazardType: '도로파손' });
+      await service.findNearby({
+        ...baseQuery,
+        hazardType: HazardType.ROAD_DAMAGE,
+      });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'report.hazardType = :hazardType',
-        { hazardType: '도로파손' },
+        { hazardType: HazardType.ROAD_DAMAGE },
       );
     });
 
@@ -256,11 +259,11 @@ describe('ReportService', () => {
 
     it('dto에 일부 필드만 있어도 해당 필드만 수정한다', async () => {
       mockReportRepository.findOne.mockResolvedValue({ ...mockReport });
-      const partialDto: UpdateReportDto = { hazardType: '화재위험' };
+      const partialDto: UpdateReportDto = { hazardType: HazardType.FIRE };
       mockReportRepository.save.mockResolvedValue(undefined);
       mockQueryBuilder.getOneOrFail.mockResolvedValue({
         ...mockReport,
-        hazardType: '화재위험',
+        hazardType: HazardType.FIRE,
       });
 
       const result = await service.update(
@@ -269,7 +272,7 @@ describe('ReportService', () => {
         partialDto,
       );
 
-      expect(result.hazardType).toBe('화재위험');
+      expect(result.hazardType).toBe(HazardType.FIRE);
     });
 
     it('존재하지 않는 신고면 NotFoundException을 던진다', async () => {

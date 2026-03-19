@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
-import { HazardLevel } from '../common/enums/hazard.enum';
+import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { User } from '../user/entities/user.entity';
 import { CreateMarkerDto, GetMarkersQueryDto, UpdateMarkerDto } from './dto';
@@ -23,7 +23,7 @@ const mockMarker = {
   source: MarkerSource.REPORT,
   latitude: 37.5665,
   longitude: 126.978,
-  hazardType: '도로파손',
+  hazardType: HazardType.ROAD_DAMAGE,
   hazardLevel: HazardLevel.HIGH,
   location: null,
   report: null,
@@ -71,7 +71,7 @@ describe('MarkerController', () => {
       const createDto: CreateMarkerDto = {
         latitude: 37.5665,
         longitude: 126.978,
-        hazardType: '도로파손',
+        hazardType: HazardType.ROAD_DAMAGE,
         hazardLevel: HazardLevel.HIGH,
         description: '도로에 큰 구멍이 있습니다.',
       };
@@ -126,7 +126,7 @@ describe('MarkerController', () => {
   describe('update', () => {
     it('id, req.user.id, dto를 전달해 서비스를 호출하고 결과를 반환한다', async () => {
       const updateDto: UpdateMarkerDto = {
-        hazardType: '화재위험',
+        hazardType: HazardType.FIRE,
         hazardLevel: HazardLevel.MEDIUM,
       };
       const updatedMarker = { ...mockMarker, ...updateDto };
