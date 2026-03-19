@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
 import { databaseConfig } from '../database.config';
-import { HazardLevel } from '../report/entities/report.entity';
+import { HazardLevel } from '../common/enums/hazard.enum';
 import { Marker, MarkerSource } from '../marker/entities/marker.entity';
 import { SafetyMungoReport } from '../safety-mungo-report/entities/safety-mungo-report.entity';
 
