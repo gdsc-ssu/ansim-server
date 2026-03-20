@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
 import { databaseConfig } from '../database.config';
-import { User } from '../user/entities/user.entity';
 import { HazardLevel, HazardType } from '../common/enums/hazard.enum';
+import { User } from '../user/entities/user.entity';
 import { Report } from '../report/entities/report.entity';
 import { Marker, MarkerSource } from '../marker/entities/marker.entity';
 
@@ -57,14 +57,14 @@ const SEED_DATA: SeedMarker[] = [
     longitude: 126.9545,
   },
   {
-    hazardType: HazardType.TRAFFIC,
+    hazardType: HazardType.ROAD_DAMAGE,
     hazardLevel: HazardLevel.MEDIUM,
     description: '교차로 신호등이 간헐적으로 작동하지 않음',
     latitude: 37.4983,
     longitude: 126.9578,
   },
   {
-    hazardType: HazardType.TRAFFIC,
+    hazardType: HazardType.ROAD_DAMAGE,
     hazardLevel: HazardLevel.MEDIUM,
     description: '사고로 인한 가드레일 파손 방치',
     latitude: 37.4942,
@@ -85,7 +85,7 @@ const SEED_DATA: SeedMarker[] = [
     longitude: 126.956,
   },
   {
-    hazardType: HazardType.TRAFFIC,
+    hazardType: HazardType.OTHER,
     hazardLevel: HazardLevel.LOW,
     description: '소방차 진입로에 불법 주정차 빈번',
     latitude: 37.4952,
