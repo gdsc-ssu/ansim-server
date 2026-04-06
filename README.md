@@ -173,7 +173,7 @@ docker compose down
 docker compose down -v
 ```
 
-👉 실행 후 `http://localhost:3000`로 접속 가능
+👉 실행 후 `http://localhost:3000` 로 접속 가능
 
 ---
 
@@ -188,13 +188,13 @@ docker compose down -v
 
 ### 🗄️ DB 정보
 
-| 항목     | 값             |
-| -------- | -------------- |
-| Host     | localhost / db |
-| Port     | 5432           |
-| User     | ansim          |
-| Password | ansim          |
-| Database | ansim          |
+| 항목     | 값                                  |
+| -------- | ----------------------------------- |
+| Host     | localhost (로컬) / db (컨테이너 간) |
+| Port     | 5432                                |
+| User     | ansim                               |
+| Password | ansim                               |
+| Database | ansim                               |
 
 ---
 
@@ -228,16 +228,16 @@ pnpm migration:revert
 pnpm migration:drop
 ```
 
-👉 개발 환경: `synchronize: true`
+👉 개발 환경: synchronize: true (엔티티 변경 시 DB 자동 반영)
 
 ---
 
 ## 🧪 테스트
 
 ```bash
-pnpm run test
-pnpm run test:e2e
-pnpm run test:cov
+pnpm run test          # 단위 테스트
+pnpm run test:e2e      # E2E 테스트
+pnpm run test:cov      # 커버리지
 ```
 
 ![](<./imgs/안심(white).png>)
