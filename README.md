@@ -135,6 +135,7 @@
 - NestJS · TypeScript
 - PostgreSQL · PostGIS
 - Google Cloud Storage
+- [백엔드팀 wiki 확인해보기](https://github.com/gdsc-ssu/ansim-server/wiki)
 
 ---
 
